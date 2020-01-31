@@ -86,14 +86,46 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 				
 				player.thrust = true;
 				break;
+			
+			case KeyEvent.VK_SPACE:
+				
+				for (Bullet bullet : player.bullets) {
+					
+					if (bullet.visable == false) {
+						
+						bullet.visable = true;
+						bullet.rot = player.rot;
+						bullet.posX = player.posX;
+						bullet.posY = player.posY;
+						bullet.vX = player.dX * 8;
+						bullet.vY = player.dY * 8;
+						break;
+					}
+				}
+				break;
 		}
 
         }//GEN-LAST:event_gLJPanel1KeyPressed
 
         private void gLJPanel1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyReleased
-               
-		player.rotSpeed = 0.0f;
-		player.thrust = false;
+ 
+		switch (evt.getKeyCode()) {
+			
+			case KeyEvent.VK_A:
+
+				player.rotSpeed = 0.0f;
+				break;
+			
+			case KeyEvent.VK_D:
+
+				player.rotSpeed = 0.0f;
+				break;
+			
+			case KeyEvent.VK_W:
+				
+				player.thrust = false;
+				break;
+		}
         }//GEN-LAST:event_gLJPanel1KeyReleased
 
 	/**

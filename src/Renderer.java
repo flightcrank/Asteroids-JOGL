@@ -22,8 +22,7 @@ class Renderer implements GLEventListener {
 	}
 	
 	@Override
-	public void init(GLAutoDrawable glAutoDrawable) {
-		System.out.println("init");	
+	public void init(GLAutoDrawable glAutoDrawable) {	
 		
 		GL3 gl = glAutoDrawable.getGL().getGL3();
 		
@@ -64,36 +63,26 @@ class Renderer implements GLEventListener {
 		//shader uniform variables
 		int persp = gl.glGetUniformLocation(renderingProgram, "ortho");
 		gl.glUniformMatrix4fv(persp, 1, false, Buffers.newDirectFloatBuffer(Matrix.orthographic(w, h, 1, 10)));
-		
-		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-		gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(player.rot)));
-		
-		int shipPos = gl.glGetUniformLocation(renderingProgram, "shipPos");
-		gl.glUniform2f(shipPos, player.posX, player.posY);
-		
-		int vel = gl.glGetUniformLocation(renderingProgram, "vel");
-		gl.glUniform2f(vel, player.vX, player.vY);
-		
-		int i = player.thrust ? 1 : 0;
-		int thrust = gl.glGetUniformLocation(renderingProgram, "thrust");
-		gl.glUniform1i(thrust, i);
-		
-		//vert position
-		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);		///make vert buffer active
-		gl.glVertexAttribPointer(0, 3, GL3.GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 3, 0);
-		gl.glEnableVertexAttribArray(0);
-		
+				
 		//set background colour and clear the screen
 		gl.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 		
-		//DRAW
-		gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-		//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
-		//gl.glDrawElements(GL3.GL_TRIANGLES, numFaceIndex, GL3.GL_UNSIGNED_INT, 0);
+		//DRAW the game objects
+		drawShip(gl);
+		drawBullets(gl);
 		
+		//update ship state
 		player.update(w, h);
 		
+		//update bullet array state
+		for(Bullet bullet : player.bullets) {
+			
+			if (bullet.visable) {
+				
+				bullet.update(w, h);
+			}
+		}
 	}
 	
 	@Override
@@ -108,6 +97,64 @@ class Renderer implements GLEventListener {
 		GL3 gl = glAutoDrawable.getGL().getGL3();
 		w = width;
 		h = height;
+	}
+	
+	public void drawBullets(GL3 gl) {
+		
+		for (Bullet bullet : player.bullets) {
+			
+			if (bullet.visable) { 
+				
+				//uniform variables
+				int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
+				gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(bullet.rot)));
+
+				int shipPos = gl.glGetUniformLocation(renderingProgram, "objectPos");
+				gl.glUniform2f(shipPos, bullet.posX, bullet.posY);
+
+				int vel = gl.glGetUniformLocation(renderingProgram, "vel");
+				gl.glUniform2f(vel, bullet.vX, bullet.vY);
+				
+				int scale = gl.glGetUniformLocation(renderingProgram, "scale");
+				gl.glUniform1f(scale, bullet.scale);
+
+				//vert position
+				gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);		///make vert buffer active
+				gl.glVertexAttribPointer(0, 3, GL3.GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 3, 0);
+				gl.glEnableVertexAttribArray(0);
+
+				//DRAW
+				gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
+			}
+		}
+	}
+	
+	public void drawShip(GL3 gl) {
+		
+		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
+		gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(player.rot)));
+		
+		int shipPos = gl.glGetUniformLocation(renderingProgram, "objectPos");
+		gl.glUniform2f(shipPos, player.posX, player.posY);
+		
+		int vel = gl.glGetUniformLocation(renderingProgram, "vel");
+		gl.glUniform2f(vel, player.vX, player.vY);
+		
+		int scale = gl.glGetUniformLocation(renderingProgram, "scale");
+		gl.glUniform1f(scale, player.scale);
+		
+		int i = player.thrust ? 1 : 0;
+		int thrust = gl.glGetUniformLocation(renderingProgram, "thrust");
+		gl.glUniform1i(thrust, i);
+		
+		//vert position
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);		///make vert buffer active
+		gl.glVertexAttribPointer(0, 3, GL3.GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 3, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		//DRAW
+		gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
+		
 	}
 	
 	private String[] readShaderSource(String path) {
