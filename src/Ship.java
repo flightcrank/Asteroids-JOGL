@@ -21,19 +21,25 @@ public class Ship extends GameObject {
 		scale = 15;
 		thrust = false;
 		bullets = new Bullet[3];
-		verts = new float[] {0.0f,  1.0f, 0.0f,
-				    -1.0f, -1.0f, 0.0f,
-				     1.0f, -1.0f, 0.0f};
-		
-		//set up the bullet verts
+
+		//set up the bullet propertys
 		for (int i = 0; i < bullets.length; i++) {
 			
 			bullets[i] = new Bullet();
-			bullets[i] .vX = 0.1f;
-			bullets[i] .vY = 0.1f;
-			bullets[i] .scale = 3.0f;
-			bullets[i] .visable = false;
+			
 		}
+		
+		
+	}
+	
+	public static float[] getVerts() {
+		
+		return new float[] {	0.0f, -0.5f, 0.0f,
+					1.0f,  -1.0f,  0.0f,
+					0.0f,   1.0f,  0.0f,
+					0.0f,   1.0f,  0.0f,
+				       -1.0f,  -1.0f,  0.0f,
+					0.0f,  -0.5f,  0.0f};
 	}
 	
 	public void setDirection() {
@@ -48,32 +54,15 @@ public class Ship extends GameObject {
 		int halfWidth = w / 2;
 		int halfHeight = h / 2;
 		
-		//screen X wrap around	
-		if (posX > halfWidth) {
-			
-			posX = -halfWidth;
-		
-		} else if (posX < -halfWidth) {
-			
-			posX = halfWidth;
-		}
-		
-		//screen Y wrap around
-		if (posY > halfHeight) {
-			
-			posY = -halfHeight;
-		
-		} else if (posY < -halfHeight) {
-			
-			posY = halfHeight;
-		}
+		posX = (posX >  halfWidth)  ? posX =  -halfWidth  : posX;
+		posX = (posX < -halfWidth)  ? posX =   halfWidth  : posX;
+		posY = (posY >  halfHeight) ? posY =  -halfHeight : posY;
+		posY = (posY < -halfHeight) ? posY =   halfHeight : posY;
 	}
 	
 	@Override //update player position and rotation
 	public void update(int w, int h) {
-		
-		
-		
+
 		rot += rotSpeed;
 		posX += vX;
 		posY += vY;
@@ -85,19 +74,16 @@ public class Ship extends GameObject {
 		setDirection();
 		
 		if (thrust) {
-				
-			//will add or subtract from the ships velocity based on the ships normaalised direction vector
-			vY += dY * .05;
-			vX += dX * .05;
-			
-			//set a limit on the ships velocity
+
+			//set a limit on the ships maximum velocity
 			float limit = 2.5f;
 			
-			//cap veloicy so it never go's above or below a limit
-			vX = (vX >  limit) ?  limit : vX;
-			vX = (vX < -limit) ? -limit : vX;
-			vY = (vY >  limit) ?  limit : vY;
-			vY = (vY < -limit) ? -limit : vY;
+			//if true set velocity to limit
+			//if false add .02 to velocity based on the ships normalised direction vector
+			vX = (vX >  limit) ?  limit : vX + (dX * .03f);
+			vX = (vX < -limit) ? -limit : vX + (dX * .03f);
+			vY = (vY >  limit) ?  limit : vY + (dY * .03f);
+			vY = (vY < -limit) ? -limit : vY + (dY * .03f);
 		}
 	}
 }

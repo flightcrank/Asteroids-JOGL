@@ -13,7 +13,6 @@ public abstract class GameObject {
 	float vY;		//the velocity vector of the game object
 	float rot;		//the amount the game object is rotated in radians
 	float scale;		//the scale of the object
-	float[] verts;		//the vertices that make up the game object
 	
 	public GameObject() {
 		

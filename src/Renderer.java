@@ -9,16 +9,18 @@ class Renderer implements GLEventListener {
 
 	int renderingProgram;
 	int vao[] = new int[1]; //vertex attribute object
-	int vbo[] = new int[1]; //vertex buffer object
+	int vbo[] = new int[3]; //vertex buffer object
 	int w, h;
-	float vertices[];
-	int numVerts = 0;
-	FloatBuffer vBuf;
+	FloatBuffer shipVBuf;
+	FloatBuffer bulletVBuf;
+	FloatBuffer asteroidVBuf;
 	Ship player;
+	ArrayList<Asteroid> asteroids;
 		
-	public Renderer(Ship ship) {
+	public Renderer(Ship ship, ArrayList<Asteroid> a) {
 		
 		this.player = ship;
+		this.asteroids = a;
 	}
 	
 	@Override
@@ -27,11 +29,14 @@ class Renderer implements GLEventListener {
 		GL3 gl = glAutoDrawable.getGL().getGL3();
 		
 		//Load ship verts into buffer
-		this.vBuf = Buffers.newDirectFloatBuffer(player.verts);
-		this.numVerts = player.verts.length / 3;
+		this.shipVBuf = Buffers.newDirectFloatBuffer(Ship.getVerts());
+		this.bulletVBuf = Buffers.newDirectFloatBuffer(Bullet.getVerts());
+		this.asteroidVBuf = Buffers.newDirectFloatBuffer(Asteroid.getVerts());
 		
 		gl.glPointSize(5.0f);
-		gl.glEnable(GL3.GL_DEPTH_TEST);  
+		gl.glEnable(GL3.GL_DEPTH_TEST);
+		gl.glEnable(GL3.GL_BLEND);
+		gl.glBlendFunc(GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
 		//gl.glPolygonMode(GL3.GL_FRONT_AND_BACK, GL3.GL_LINE);
 		
 		//set background colour
@@ -45,8 +50,14 @@ class Renderer implements GLEventListener {
 		//VAO
 		gl.glBindVertexArray(vao[0]);	//make vertex attribute object 0 active 
 		
-		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-		gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);									//make vert buffer active
+		gl.glBufferData(GL3.GL_ARRAY_BUFFER, shipVBuf.limit() * Buffers.SIZEOF_FLOAT, shipVBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
+		
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);									//make vert buffer active
+		gl.glBufferData(GL3.GL_ARRAY_BUFFER, bulletVBuf.limit() * Buffers.SIZEOF_FLOAT, bulletVBuf, GL3.GL_STATIC_DRAW);//copy verts to VBO[1] 
+		
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[2]);										//make vert buffer active
+		gl.glBufferData(GL3.GL_ARRAY_BUFFER, asteroidVBuf.limit() * Buffers.SIZEOF_FLOAT, asteroidVBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[1] 
 		
 		//load/compile shaders from file
 		renderingProgram = createShaders();
@@ -71,9 +82,16 @@ class Renderer implements GLEventListener {
 		//DRAW the game objects
 		drawShip(gl);
 		drawBullets(gl);
+		drawAsteroids(gl);
 		
 		//update ship state
 		player.update(w, h);
+		
+		//update asteroids
+		for (Asteroid a : asteroids) {
+			
+			a.update(w, h);
+		}
 		
 		//update bullet array state
 		for(Bullet bullet : player.bullets) {
@@ -83,6 +101,9 @@ class Renderer implements GLEventListener {
 				bullet.update(w, h);
 			}
 		}
+		
+		shipCollision();
+		bulletCollision();
 	}
 	
 	@Override
@@ -119,11 +140,12 @@ class Renderer implements GLEventListener {
 				gl.glUniform1f(scale, bullet.scale);
 
 				//vert position
-				gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);		///make vert buffer active
+				gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);		///make vert buffer active
 				gl.glVertexAttribPointer(0, 3, GL3.GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 3, 0);
 				gl.glEnableVertexAttribArray(0);
 
 				//DRAW
+				int numVerts = Bullet.getVerts().length / 3;
 				gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
 			}
 		}
@@ -143,17 +165,110 @@ class Renderer implements GLEventListener {
 		int scale = gl.glGetUniformLocation(renderingProgram, "scale");
 		gl.glUniform1f(scale, player.scale);
 		
-		int i = player.thrust ? 1 : 0;
-		int thrust = gl.glGetUniformLocation(renderingProgram, "thrust");
-		gl.glUniform1i(thrust, i);
-		
 		//vert position
 		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);		///make vert buffer active
 		gl.glVertexAttribPointer(0, 3, GL3.GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 3, 0);
 		gl.glEnableVertexAttribArray(0);
 		
 		//DRAW
+		int numVerts = Ship.getVerts().length / 3;
 		gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
+		
+	}
+	
+	public void drawAsteroids(GL3 gl) {
+		
+		//update asteroids
+		for (Asteroid asteroid : asteroids) {
+
+			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
+			gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(asteroid.rot)));
+
+			int shipPos = gl.glGetUniformLocation(renderingProgram, "objectPos");
+			gl.glUniform2f(shipPos, asteroid.posX, asteroid.posY);
+
+			int vel = gl.glGetUniformLocation(renderingProgram, "vel");
+			gl.glUniform2f(vel, asteroid.vX, asteroid.vY);
+
+			int scale = gl.glGetUniformLocation(renderingProgram, "scale");
+			gl.glUniform1f(scale, asteroid.scale);
+
+			//vert position
+			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[2]);		///make vert buffer active
+			gl.glVertexAttribPointer(0, 3, GL3.GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 3, 0);
+			gl.glEnableVertexAttribArray(0);
+
+			//DRAW
+			int numVerts = Asteroid.getVerts().length / 3;
+			gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
+		}
+	}
+	
+	public void bulletCollision() {
+	
+		for (Bullet b : player.bullets) {
+			
+			if (b.visable) {
+				
+				for (int i = 0; i < asteroids.size(); i++ ) {
+					
+					Asteroid a = asteroids.get(i);	//current asteroid
+					float dx = (float) Math.pow((b.posX - a.posX), 2);
+					float dy = (float) Math.pow((b.posY - a.posY), 2);
+					float d = (float) Math.sqrt(dx + dy);
+					float minDist = (a.scale + b.scale) * .8f;
+			
+					if (d <= minDist) {
+				
+						System.out.println("BULLET HIT !");
+						b.visable = false;
+					
+						switch (a.size) {
+							
+							case BIG:
+								
+								asteroids.add(new Asteroid(Size.MEDIUM, a.posX, a.posY));
+								asteroids.add(new Asteroid(Size.MEDIUM, a.posX, a.posY));
+								asteroids.add(new Asteroid(Size.MEDIUM, a.posX, a.posY));
+								asteroids.remove(i);
+								break;
+								
+							case MEDIUM:
+								
+								asteroids.add(new Asteroid(Size.SMALL, a.posX, a.posY));
+								asteroids.add(new Asteroid(Size.SMALL, a.posX, a.posY));
+								asteroids.add(new Asteroid(Size.SMALL, a.posX, a.posY));
+								asteroids.remove(i);
+								break;
+								
+							case SMALL:
+								asteroids.remove(i);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void shipCollision() {
+		
+		for (Asteroid a : asteroids) {
+			
+			float dx = (float) Math.pow((player.posX - a.posX), 2);
+			float dy = (float) Math.pow((player.posY - a.posY), 2);
+			float d = (float) Math.sqrt(dx + dy);
+			
+			float minDist = (a.scale + player.scale) * .8f;
+			
+			if (d <= minDist) {
+				
+				System.out.println("SHIP HIT !");
+			}
+			
+			//System.out.println(String.format("distance = %.2f dx = %.2f dy = %.2f", d, dx, dy));
+		}
+		
+		
 		
 	}
 	

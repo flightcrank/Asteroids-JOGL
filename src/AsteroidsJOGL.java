@@ -4,6 +4,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.FPSAnimator;
+import java.util.ArrayList;
 
 /**
  *
@@ -13,11 +14,17 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 
 	Renderer rend;
 	Ship player;
+	ArrayList<Asteroid> asteroids;
 	
 	public AsteroidsJOGL() {
 		 
+		asteroids = new ArrayList<>();
+		asteroids.add(new Asteroid(Size.BIG));
+		asteroids.add(new Asteroid(Size.BIG));
+		asteroids.add(new Asteroid(Size.BIG));
+		
 		player = new Ship();
-		rend  = new Renderer(player);
+		rend  = new Renderer(player, asteroids);
 		
 		initComponents();
 	}
@@ -69,7 +76,6 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 
         private void gLJPanel1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyPressed
              
-
 		switch (evt.getKeyCode()) {
 			
 			case KeyEvent.VK_A:
