@@ -39,7 +39,26 @@ public class Ship extends GameObject {
 					0.0f,   1.0f,  0.0f,
 					0.0f,   1.0f,  0.0f,
 				       -1.0f,  -1.0f,  0.0f,
-					0.0f,  -0.5f,  0.0f};
+					0.0f,  -0.5f,  0.0f,
+		
+					0.500000f, -1.000000f, 0.000000f,
+0.200000f, -1.100000f, 0.000000f,
+0.400000f, -0.800000f, 0.000000f,
+0.000000f, -1.500000f, 0.000000f,
+0.000000f, -0.600000f, 0.000000f,
+0.200000f, -1.100000f, 0.000000f,
+0.400000f, -0.800000f, 0.000000f,
+0.200000f, -1.100000f, 0.000000f,
+0.000000f, -0.600000f, 0.000000f,
+-0.500000f, -1.000000f, 0.000000f,
+-0.400000f, -0.800000f, 0.000000f,
+-0.200000f, -1.100000f, 0.000000f,
+0.000000f, -1.500000f, 0.000000f,
+-0.200000f, -1.100000f, 0.000000f,
+0.000000f, -0.600000f, 0.000000f,
+-0.400000f, -0.800000f, 0.000000f,
+0.000000f, -0.600000f, 0.000000f,
+-0.200000f, -1.100000f, 0.000000f};
 	}
 	
 	public void setDirection() {
@@ -80,10 +99,10 @@ public class Ship extends GameObject {
 			
 			//if true set velocity to limit
 			//if false add .02 to velocity based on the ships normalised direction vector
-			vX = (vX >  limit) ?  limit : vX + (dX * .03f);
-			vX = (vX < -limit) ? -limit : vX + (dX * .03f);
-			vY = (vY >  limit) ?  limit : vY + (dY * .03f);
-			vY = (vY < -limit) ? -limit : vY + (dY * .03f);
+			vX = (vX >  limit) ?  limit : vX + (dX * .02f);
+			vX = (vX < -limit) ? -limit : vX + (dX * .02f);
+			vY = (vY >  limit) ?  limit : vY + (dY * .02f);
+			vY = (vY < -limit) ? -limit : vY + (dY * .02f);
 		}
 	}
 }

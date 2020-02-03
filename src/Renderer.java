@@ -8,6 +8,7 @@ import java.util.*;
 class Renderer implements GLEventListener {
 
 	int renderingProgram;
+	int playerRenderingProgram;
 	int vao[] = new int[1]; //vertex attribute object
 	int vbo[] = new int[3]; //vertex buffer object
 	int w, h;
@@ -60,7 +61,8 @@ class Renderer implements GLEventListener {
 		gl.glBufferData(GL3.GL_ARRAY_BUFFER, asteroidVBuf.limit() * Buffers.SIZEOF_FLOAT, asteroidVBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[1] 
 		
 		//load/compile shaders from file
-		renderingProgram = createShaders();
+		renderingProgram = createShaders("vertex.glsl","fragment.glsl");
+		playerRenderingProgram = createShaders("playerVert.glsl","playerFrag.glsl");
 	}
 		
 	@Override
@@ -68,21 +70,14 @@ class Renderer implements GLEventListener {
 
 		GL3 gl = glAutoDrawable.getGL().getGL3();
 		
-		//use compiled shaders
-		gl.glUseProgram(renderingProgram);
-		
-		//shader uniform variables
-		int persp = gl.glGetUniformLocation(renderingProgram, "ortho");
-		gl.glUniformMatrix4fv(persp, 1, false, Buffers.newDirectFloatBuffer(Matrix.orthographic(w, h, 1, 10)));
-				
 		//set background colour and clear the screen
 		gl.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 		
 		//DRAW the game objects
-		drawShip(gl);
 		drawBullets(gl);
 		drawAsteroids(gl);
+		drawShip(gl);
 		
 		//update ship state
 		player.update(w, h);
@@ -122,6 +117,13 @@ class Renderer implements GLEventListener {
 	
 	public void drawBullets(GL3 gl) {
 		
+		//use compiled shaders
+		gl.glUseProgram(renderingProgram);
+		
+		//shader uniform variables
+		int persp = gl.glGetUniformLocation(renderingProgram, "ortho");
+		gl.glUniformMatrix4fv(persp, 1, false, Buffers.newDirectFloatBuffer(Matrix.orthographic(w, h, 1, 10)));
+		
 		for (Bullet bullet : player.bullets) {
 			
 			if (bullet.visable) { 
@@ -153,17 +155,28 @@ class Renderer implements GLEventListener {
 	
 	public void drawShip(GL3 gl) {
 		
-		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
+		//use compiled shaders
+		gl.glUseProgram(playerRenderingProgram);
+		
+		//shader uniform variables
+		int persp = gl.glGetUniformLocation(playerRenderingProgram, "ortho");
+		gl.glUniformMatrix4fv(persp, 1, false, Buffers.newDirectFloatBuffer(Matrix.orthographic(w, h, 1, 10)));
+		
+		int rotation = gl.glGetUniformLocation(playerRenderingProgram, "rotate");
 		gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(player.rot)));
 		
-		int shipPos = gl.glGetUniformLocation(renderingProgram, "objectPos");
+		int shipPos = gl.glGetUniformLocation(playerRenderingProgram, "objectPos");
 		gl.glUniform2f(shipPos, player.posX, player.posY);
 		
-		int vel = gl.glGetUniformLocation(renderingProgram, "vel");
+		int vel = gl.glGetUniformLocation(playerRenderingProgram, "vel");
 		gl.glUniform2f(vel, player.vX, player.vY);
 		
-		int scale = gl.glGetUniformLocation(renderingProgram, "scale");
+		int scale = gl.glGetUniformLocation(playerRenderingProgram, "scale");
 		gl.glUniform1f(scale, player.scale);
+		
+		int t = player.thrust ? 1: 0;
+		int thrust = gl.glGetUniformLocation(playerRenderingProgram, "thrust");
+		gl.glUniform1i(thrust, t);
 		
 		//vert position
 		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);		///make vert buffer active
@@ -177,6 +190,13 @@ class Renderer implements GLEventListener {
 	}
 	
 	public void drawAsteroids(GL3 gl) {
+		
+		//use compiled shaders
+		gl.glUseProgram(renderingProgram);
+		
+		//shader uniform variables
+		int persp = gl.glGetUniformLocation(renderingProgram, "ortho");
+		gl.glUniformMatrix4fv(persp, 1, false, Buffers.newDirectFloatBuffer(Matrix.orthographic(w, h, 1, 10)));
 		
 		//update asteroids
 		for (Asteroid asteroid : asteroids) {
@@ -295,12 +315,12 @@ class Renderer implements GLEventListener {
 		return vertexList.toArray(new String[0]);
 	}
 
-	public int createShaders() {
+	public int createShaders(String vertex, String fragment) {
 			
 		GL3 gl = (GL3) GLContext.getCurrentGL();
 
-		String vshaderSource[] = readShaderSource("vertex.glsl");
-		String fshaderSource[] = readShaderSource("fragment.glsl");
+		String vshaderSource[] = readShaderSource(vertex);
+		String fshaderSource[] = readShaderSource(fragment);
 		
 		int vShader = gl.glCreateShader(GL3.GL_VERTEX_SHADER);
 		gl.glShaderSource(vShader, vshaderSource.length, vshaderSource, null, 0);

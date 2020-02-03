@@ -7,12 +7,37 @@ uniform mat2 rotate;
 uniform vec2 objectPos;
 uniform vec2 vel;
 uniform float scale;
+uniform int thrust;
 
 out vec4 vertCol;
 
 void main() {
-  
-    vertCol = vec4(1.0, 1.0, 1.0, 1.0);  
+     
+    if (thrust == 1) {
+        
+        if (gl_VertexID > 5) {
+
+            vertCol = vec4(1.0, 1.0, 0.0, 1.0);
+
+        } else {
+
+            vertCol = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    
+    } else {
+        
+        if (gl_VertexID > 5) {
+
+            vertCol = vec4(1.0, 1.0, 1.0, 0.0);
+
+        } else {
+
+            vertCol = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+        
+    }
+    
+     
 
     vec4 scaleVert = vertex * vec4(scale, scale, 1, 1);
     vec4 rotateVert = scaleVert * mat4(rotate);
