@@ -18,4 +18,4 @@ that should compile all necessary .java files. to run the program type the comma
 
 
 ## Images 
-![Imgur](https://imgur.com/w4rmGLA)
+![Imgur](https://i.imgur.com/w4rmGLA.gif)
