@@ -7,26 +7,25 @@
 
 public class Bullet extends GameObject {
 	
+	Sprite2D sprite;
+	
 	public Bullet() {
 		
 		vX = 0.1f;
 		vY = 0.1f;
-		scale = 3.0f;
+		scale = 45.0f;
 		visable = false;
+		sprite = new Sprite2D(512, 512);
+		sprite.setIndex(5);
+		sprite.setScale(scale);
+		sprite.setSize(128, 128);
 	}
-	
-	public static float[] getVerts() {
 		
-		return new float[] {	 0.0f,  1.0f, 0.0f,
-					-1.0f, -1.0f, 0.0f,
-					 1.0f, -1.0f, 0.0f};
-	}
-	
 	@Override
 	public void update(int w, int h) {
 	
-		posX += vX;
-		posY += vY;
+		posX += -vX;
+		posY += -vY;
 		
 		checkBounds(w, h);
 	}

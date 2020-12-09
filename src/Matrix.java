@@ -9,7 +9,6 @@ class Matrix {
 		return m;
 	}
 	
-	// this is colum major, and rotates counter clockwise with positve angles
 	public static float[] rot2D(float angle) {
 		
 		float[] m = {
@@ -142,16 +141,7 @@ class Matrix {
 		return m;
 	}
 	
-	public static float[] orthographic(int width, int height, float zNear, float zFar) {
-		
-		float w = width / 2; 
-		float h = height / 2;
-		
-		float left  = -w;
-		float right = w;
-		
-		float top = h;
-		float bottom = -h;
+	public static float[] orthographic(float xLeft, float xRight, float yBottom, float yTop, float zNear, float zFar) {
 		
 		float[] m = {
 			
@@ -161,12 +151,14 @@ class Matrix {
 			0, 0, 0, 1
 		};
 		
-		m[0]  = 2 / w;
-		m[12] = 0;//-(right + left) / (right - left);
-		m[5]  = 2 / h;
-		m[13] = 0;//-(top + bottom) / (top - bottom);
+		
+		m[0] = 2 / (xRight - xLeft);
+		m[5] = 2 / (yBottom - yTop );
 		m[10] = -2 / (zFar - zNear);
-		m[14] = -(zFar + zNear) / (zFar - zNear);
+		m[12] = (xRight + xLeft) / (xLeft - xRight);
+		m[13] = (yTop + yBottom) / (yTop - yBottom);
+		m[14] = (zFar + zNear) / (zFar - zNear);
+		m[15] = 1;
 		
 		return m;
 	}

@@ -27,4 +27,5 @@ public abstract class GameObject {
 	
 	//each instance must overide this method
 	public abstract void update(int w, int h);
+
 }

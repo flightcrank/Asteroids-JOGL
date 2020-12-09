@@ -10,21 +10,26 @@ import java.util.ArrayList;
  *
  * @author karma
  */
-public class AsteroidsJOGL extends javax.swing.JFrame {
 
-	Renderer rend;
-	Ship player;
-	ArrayList<Asteroid> asteroids;
+enum Scene {TITLE, GAME};
+
+public class AsteroidsJOGL extends javax.swing.JFrame {
 	
+	public Ship player;
+	public ArrayList<Asteroid> asteroids;//Asteroid[] asteroids;
+	public Renderer rend;
+
 	public AsteroidsJOGL() {
-		 
-		asteroids = new ArrayList<>();
-		asteroids.add(new Asteroid(Size.BIG));
-		asteroids.add(new Asteroid(Size.BIG));
-		asteroids.add(new Asteroid(Size.BIG));
 		
 		player = new Ship();
-		rend  = new Renderer(player, asteroids);
+		asteroids = new ArrayList<>();
+		
+		for(int i = 0; i < 3; i++) {
+		
+			asteroids.add(new Asteroid(Size.BIG));
+		}
+		
+		rend = new Renderer(player, asteroids, Scene.TITLE);
 		
 		initComponents();
 	}
@@ -46,7 +51,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 ani.start();
 
                 setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-                setTitle("Asteroids JOGL");
+                setTitle("Java Sprite Viewer");
 
                 gLJPanel1.setPreferredSize(new java.awt.Dimension(512, 512));
                 gLJPanel1.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -62,11 +67,11 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 gLJPanel1.setLayout(gLJPanel1Layout);
                 gLJPanel1Layout.setHorizontalGroup(
                         gLJPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 400, Short.MAX_VALUE)
+                        .addGap(0, 705, Short.MAX_VALUE)
                 );
                 gLJPanel1Layout.setVerticalGroup(
                         gLJPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 300, Short.MAX_VALUE)
+                        .addGap(0, 543, Short.MAX_VALUE)
                 );
 
                 getContentPane().add(gLJPanel1, java.awt.BorderLayout.CENTER);
@@ -75,46 +80,54 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
         }// </editor-fold>//GEN-END:initComponents
 
         private void gLJPanel1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyPressed
-             
+                			
 		switch (evt.getKeyCode()) {
-			
+
 			case KeyEvent.VK_A:
-				
-				player.rotSpeed = -0.05f;
-				break;
-			
-			case KeyEvent.VK_D:
-				
+
 				player.rotSpeed = 0.05f;
 				break;
-			
+
+			case KeyEvent.VK_D:
+
+				player.rotSpeed = -0.05f;
+				break;
+
 			case KeyEvent.VK_W:
-				
+
 				player.thrust = true;
 				break;
-			
+
 			case KeyEvent.VK_SPACE:
 				
-				for (Bullet bullet : player.bullets) {
+				if (rend.scene == Scene.TITLE) {
 					
-					if (bullet.visable == false) {
-						
-						bullet.visable = true;
-						bullet.rot = player.rot;
-						bullet.posX = player.posX;
-						bullet.posY = player.posY;
-						bullet.vX = player.dX * 8;
-						bullet.vY = player.dY * 8;
-						break;
+					rend.scene = Scene.GAME;
+					
+				} else if (rend.scene == Scene.GAME){
+					
+					for (Bullet bullet : player.bullets) {
+
+						if (bullet.visable == false && player.visable == true) {
+
+							bullet.visable = true;
+							bullet.rot = player.rot;
+							bullet.posX = player.posX;
+							bullet.posY = player.posY;
+							bullet.vX = player.dX * 8;
+							bullet.vY = player.dY * 8;
+							break;
+						}
 					}
 				}
+				
 				break;
 		}
-
+		
         }//GEN-LAST:event_gLJPanel1KeyPressed
 
         private void gLJPanel1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyReleased
- 
+	
 		switch (evt.getKeyCode()) {
 			
 			case KeyEvent.VK_A:
@@ -131,17 +144,19 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 				
 				player.thrust = false;
 				break;
-		}
+		}                
         }//GEN-LAST:event_gLJPanel1KeyReleased
 
 	/**
 	 * @param args the command line arguments
 	 */
-	public static void main(String args[]) {
+	public static void main(String[] args) {
+		
+		
 		/* Set the Nimbus look and feel */
 		//<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
 		/* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+		 * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
 		 */
 		try {
 			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -161,6 +176,20 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 		}
 		//</editor-fold>
 		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
+		//</editor-fold>
 
 		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
@@ -168,6 +197,8 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 				new AsteroidsJOGL().setVisible(true);
 			}
 		});
+		
+		
 	}
 
         // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -5,21 +5,32 @@
  */
 enum Size {BIG, MEDIUM, SMALL};
 
-public class Asteroid extends GameObject{
+public class Asteroid extends GameObject {
 
 	Size size;
 	float rotSpeed;
+	Sprite2D sprite;
 	
 	Asteroid(Size s) {
 		
+		double r = Math.ceil(Math.random() * 3);
+		sprite = new Sprite2D(512, 512);
+		sprite.setIndex((int) r + 5); 
+		sprite.setSize(128, 128);
+		posX = (float) ((Math.random() - .5) * 2) * 1000f;
+		posY = (float) ((Math.random() - .5) * 2) * 1000f;
 		init(s);
 	}
 	
 	Asteroid(Size s, float x, float y) {
 		
-		init(s);
+		double r = Math.ceil(Math.random() * 3);
 		posX = x;
 		posY = y;
+		sprite = new Sprite2D(512, 512);
+		sprite.setIndex((int) r + 5);
+		sprite.setSize(128, 128);
+		init(s);
 	}
 	
 	private void init(Size s) {
@@ -28,20 +39,22 @@ public class Asteroid extends GameObject{
 			
 			case BIG:
 				scale = 40.0f;
+				sprite.setScale(80.0f);
 				break;
 				
 			case MEDIUM:
 				scale = 20.0f;
+				sprite.setScale(40.0f);
 				break;
 				
 			case SMALL:
 				scale = 10.0f;
+				sprite.setScale(20.0f);
 				break;	
 		}
 		
 		size = s;
-		posX = (float) ((Math.random() - .5) * 2) * 1000f;
-		posX = (float) ((Math.random() - .5) * 2) * 1000f;
+		
 		vX = (float) ((Math.random() - .5) * 2) * .5f;
 		vY = (float) ((Math.random() - .5) * 2) * .5f;
 		rotSpeed = (float) ((Math.random() - .5) * 2) * .03f;
@@ -67,46 +80,17 @@ public class Asteroid extends GameObject{
 		posY = (posY < -halfHeight) ? posY =   halfHeight : posY;
 	}
 	
-	public static float[] getVerts() {
+	public int checkCollision(GameObject obj) {
 		
-		return new float[] {0.000000f, 0.000000f, 0.000000f,
-					0.031671f, 0.792114f, 0.000000f,
-					-0.549259f, 0.908211f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					-0.549259f, 0.908211f, 0.000000f,
-					-0.762112f, 0.608472f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					-0.549259f, 0.908211f, 0.000000f,
-					-0.762112f, 0.608472f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					0.415905f, 0.829636f, 0.000000f,
-					0.031671f, 0.792114f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					0.671873f, 0.464742f, 0.000000f,
-					0.415905f, 0.829636f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					0.671873f, 0.464742f, 0.000000f,
-					0.780286f, -0.080520f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					0.780286f, -0.080520f, 0.000000f,
-					0.541467f, -0.518112f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					0.541467f, -0.518112f, 0.000000f,
-					0.109574f, -0.710462f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					0.109574f, -0.710462f, 0.000000f,
-					-0.193098f, -0.412903f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					-0.193098f, -0.412903f, 0.000000f,
-					-0.566910f, -0.379114f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					-0.566910f, -0.379114f, 0.000000f,
-					-0.711617f, -0.125416f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					-0.711617f, -0.125416f, 0.000000f,
-					-0.539769f, 0.120092f, 0.000000f,
-					0.000000f, 0.000000f, 0.000000f,
-					-0.762112f, 0.608472f, 0.000000f,
-					-0.539769f, 0.120092f, 0.000000f};
+		double a = posX - obj.posX;
+		double b = posY - obj.posY;
+		double dist = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));	//distance betweek asteroid and obj
+		
+		if (dist < sprite.scale[0]) {
+						
+			return 1;
+		}
+		
+		return 0;
 	}
 }
