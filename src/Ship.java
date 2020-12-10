@@ -26,7 +26,7 @@ public class Ship extends GameObject {
 		sprite = new Sprite2D(512, 512);
 		sprite.setIndex(0);
 		sprite.setScale(scale);
-		sprite.setSize(128, 128);
+		sprite.setSize(64, 64);
 
 		//set up the bullet propertys
 		for (int i = 0; i < bullets.length; i++) {
@@ -86,10 +86,10 @@ public class Ship extends GameObject {
 			
 			//if true set velocity to limit
 			//if false add .02 to velocity based on the ships normalised direction vector
-			vX = (vX >  limit) ?  limit : vX + (-dX * .03f);
-			vX = (vX < -limit) ? -limit : vX + (-dX * .03f);
-			vY = (vY >  limit) ?  limit : vY + (-dY * .03f);
-			vY = (vY < -limit) ? -limit : vY + (-dY * .03f);
+			vX = (vX >  limit) ?  limit : vX + (-dX * .017f);
+			vX = (vX < -limit) ? -limit : vX + (-dX * .017f);
+			vY = (vY >  limit) ?  limit : vY + (-dY * .017f);
+			vY = (vY < -limit) ? -limit : vY + (-dY * .017f);
 		}
 	}
 }

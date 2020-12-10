@@ -18,7 +18,7 @@ public class Bullet extends GameObject {
 		sprite = new Sprite2D(512, 512);
 		sprite.setIndex(5);
 		sprite.setScale(scale);
-		sprite.setSize(128, 128);
+		sprite.setSize(64, 64);
 	}
 		
 	@Override

@@ -115,14 +115,17 @@ class Renderer implements GLEventListener {
 			case TITLE:
 				
 				drawTitle(gl);
+				drawString("PRESS SPACE TO START", 0, 150, gl);
 				break;
 				
 			case GAME:
 				
 				drawShip(gl);
+				drawBlast(gl);
 				drawBullets(gl);
 				drawAsteroids(gl);
 				drawLives(gl);
+
 				break;
 				
 			default:
@@ -356,7 +359,7 @@ class Renderer implements GLEventListener {
 		title.setIndex(3);
 		title.setScale(512, 128);
 		title.setSize(512, 128);
-		title.setPosition(0, 0);
+		title.setPosition(0, -100);
 		
 		//shader uniform variables
 		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
@@ -390,7 +393,7 @@ class Renderer implements GLEventListener {
 		Sprite2D lives = new Sprite2D(512, 512);
 		lives.setIndex(0);
 		lives.setScale(24, 24);
-		lives.setSize(128, 128);
+		lives.setSize(64, 64);
 		lives.setPosition(0, 0);
 		
 		float[] translate = {-width / 2, -height / 2};
@@ -427,6 +430,93 @@ class Renderer implements GLEventListener {
 		}
 	}
 	
+	public void drawBlast(GL3 gl) {
+		
+		if (player.thrust) {
+			
+			Sprite2D blast = new Sprite2D(512, 512);
+			blast.setIndex(7);
+			blast.setScale(45, 90);
+			blast.setSize(64, 128);
+			blast.setPosition(player.posX, player.posY);
+
+			//shader uniform variables
+			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
+			gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(player.rot)));
+
+			int scale = gl.glGetUniformLocation(renderingProgram, "scale");
+			gl.glUniform2f(scale, blast.scale[0], blast.scale[1]);
+
+			int pos = gl.glGetUniformLocation(renderingProgram, "pos");
+			gl.glUniform2f(pos, blast.position[0] - (blast.scale[0]), blast.position[1] - (blast.scale[1]));
+
+			int res = gl.glGetUniformLocation(renderingProgram, "res");
+			gl.glUniform2f(res, width, height);
+
+			this.vBuf = Buffers.newDirectFloatBuffer(blast.verts);
+			this.tBuf = Buffers.newDirectFloatBuffer(blast.uvs);
+			this.numVerts = blast.verts.length / 3;
+
+			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
+			gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
+
+			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
+			gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
+
+			gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
+			//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+		}
+	}
+	
+	public void drawString(String str, int x, int y, GL3 gl) {
+		
+		String fontSprites = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+		Sprite2D sprite = new Sprite2D(512, 512);
+		sprite.setScale(20);
+		int pxLen = str.length() * (int) sprite.scale[0] * 2;
+		x = -pxLen / 2 + (int) sprite.scale[0];
+
+		for (int i = 0; i < str.length(); i++) {
+			
+			int charIndex = fontSprites.indexOf(str.charAt(i));
+			int offset = 128 + 4;	//index offset of where the first char starts in the sprite sheet.
+			int index = charIndex + offset + (charIndex / 12) * 4;
+			sprite.setIndex(index);
+			sprite.setSize(32, 32);
+			sprite.setPosition(x + i * sprite.scale[1] * 2, y);
+			drawChar(gl, sprite);
+		}
+	}
+	
+	public void drawChar(GL3 gl, Sprite2D sprite) {
+		
+		//shader uniform variables
+		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
+		gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(0)));
+		
+		int scale = gl.glGetUniformLocation(renderingProgram, "scale");
+		gl.glUniform2f(scale, sprite.scale[0], sprite.scale[1]);
+		
+		int pos = gl.glGetUniformLocation(renderingProgram, "pos");
+		gl.glUniform2f(pos, sprite.position[0] - (sprite.scale[0]), sprite.position[1] - (sprite.scale[1]));
+		
+		int res = gl.glGetUniformLocation(renderingProgram, "res");
+		gl.glUniform2f(res, width, height);
+		
+		this.vBuf = Buffers.newDirectFloatBuffer(sprite.verts);
+		this.tBuf = Buffers.newDirectFloatBuffer(sprite.uvs);
+		this.numVerts = sprite.verts.length / 3;
+		
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
+		gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
+		
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
+		gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
+
+		gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
+		//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+	}
+	
 	public void loadTexture(String fileName) {
 		
 		if (fileName != null) {
@@ -442,5 +532,4 @@ class Renderer implements GLEventListener {
 			}
 		}	
 	}
-	
 }

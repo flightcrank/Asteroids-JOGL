@@ -10,7 +10,7 @@ class Sprite2D {
 	float[] verts;		//the verts that make up the quad
 	float[] uvs;		//the uv co-ords for each vert
 	float[] position;	//the position the sprite will be drawn on screen
-	int[] size;		//the size in px of the sprite in the sprite sheet
+	int[] dimentions;	//the size in px of the sprite sheet
 	int index;		//the index of the sprite to be drawn from the sprite sheet
 
 	public Sprite2D(int x, int y) {
@@ -22,7 +22,7 @@ class Sprite2D {
 		position = p;
 		
 		int d[] = {x, y};
-		size = d;
+		dimentions = d;
 		
 		index = 0;
 		
@@ -53,18 +53,18 @@ class Sprite2D {
 	 */
 	public void setSize(int width, int height) {
 		
-		int cellsWide =  size[0] / width;
+		int cellsWide =  dimentions[0] / width;
 		
 		int col = index % cellsWide;
 		int row = index / cellsWide;
 		
 		float topLeftX = col * width;
-		float topLeftY = size[1] - (row * height);
+		float topLeftY = dimentions[1] - (row * height);
 		
-		float topLeftXUV = topLeftX / size[0];
-		float topLeftYUV = topLeftY / size[1];
-		float topRightXUV = (topLeftX + width) / size[0];
-		float bottomLeftYUV = (topLeftY - height) / size[1];
+		float topLeftXUV = topLeftX / dimentions[0];
+		float topLeftYUV = topLeftY / dimentions[1];
+		float topRightXUV = (topLeftX + width) / dimentions[0];
+		float bottomLeftYUV = (topLeftY - height) / dimentions[1];
 		
 		float[] uvs = {topLeftXUV,  topLeftYUV,		//top left
 			       topLeftXUV,  bottomLeftYUV,	//bottom left
