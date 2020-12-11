@@ -12,20 +12,18 @@ public class Ship extends GameObject {
 	boolean thrust;		//if thrust is being apllied
 	int lives;		//amount of lives left
 	Bullet[] bullets;	//bullets the ship is able to shoot
-	Sprite2D sprite;
 
 	public Ship() {
 		
 		dX = 0.0f;
 		dY = 0.0f;
 		rotSpeed = 0.0f;
-		scale = 45;
 		thrust = false;
 		lives = 3;
 		bullets = new Bullet[3];
 		sprite = new Sprite2D(512, 512);
 		sprite.setIndex(0);
-		sprite.setScale(scale);
+		sprite.setScale(45);
 		sprite.setSize(64, 64);
 
 		//set up the bullet propertys
@@ -39,8 +37,8 @@ public class Ship extends GameObject {
 		
 		dX = 0.0f;
 		dY = 0.0f;
-		posX = 0.0f;
-		posY = 0.0f;
+		sprite.position[0] = 0.0f;
+		sprite.position[1] = 0.0f;
 		rot = 0.0f;
 		vX = 0.0f;
 		vY = 0.0f;
@@ -59,18 +57,18 @@ public class Ship extends GameObject {
 		int halfWidth = w / 2;
 		int halfHeight = h / 2;
 		
-		posX = (posX >  halfWidth)  ? posX =  -halfWidth  : posX;
-		posX = (posX < -halfWidth)  ? posX =   halfWidth  : posX;
-		posY = (posY >  halfHeight) ? posY =  -halfHeight : posY;
-		posY = (posY < -halfHeight) ? posY =   halfHeight : posY;
+		sprite.position[0]= (sprite.position[0] >  halfWidth)  ? sprite.position[0] =  -halfWidth  : sprite.position[0];
+		sprite.position[0] = (sprite.position[0] < -halfWidth)  ? sprite.position[0] =   halfWidth  : sprite.position[0];
+		sprite.position[1] = (sprite.position[1] >  halfHeight) ? sprite.position[1] =  -halfHeight : sprite.position[1];
+		sprite.position[1] = (sprite.position[1] < -halfHeight) ? sprite.position[1] =   halfHeight : sprite.position[1];
 	}
 	
 	@Override //update player position and rotation
 	public void update(int w, int h) {
 		
 		rot += rotSpeed;
-		posX += vX;
-		posY += vY;
+		sprite.position[0] += vX;
+		sprite.position[1] += vY;
 		//sprite.setPosition(posX, posY);
 		
 		//check if the ship as reached the bounds of the screen

@@ -125,7 +125,12 @@ class Renderer implements GLEventListener {
 				drawBullets(gl);
 				drawAsteroids(gl);
 				drawLives(gl);
-
+				break;
+				
+			case GAME_OVER:
+				
+				drawAsteroids(gl);
+				drawString("GAME OVER", 0, 0, gl);
 				break;
 				
 			default:
@@ -212,7 +217,7 @@ class Renderer implements GLEventListener {
 				gl.glUniform2f(scale, player.sprite.scale[0], player.sprite.scale[1]);
 
 				int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-				gl.glUniform2f(pos, bullet.posX - (bullet.scale / 2), bullet.posY - (bullet.scale / 2));
+				gl.glUniform2f(pos, bullet.sprite.position[0] - (bullet.sprite.scale[0]), bullet.sprite.position[1] - (bullet.sprite.scale[1]));
 
 				int res = gl.glGetUniformLocation(renderingProgram, "res");
 				gl.glUniform2f(res, width, height);
@@ -251,7 +256,7 @@ class Renderer implements GLEventListener {
 				gl.glUniform2f(scale, a.sprite.scale[0], a.sprite.scale[1]);
 
 				int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-				gl.glUniform2f(pos, a.posX - (a.sprite.scale[0]), a.posY - (a.sprite.scale[0]));
+				gl.glUniform2f(pos, a.sprite.position[0] - (a.sprite.scale[0]), a.sprite.position[1] - (a.sprite.scale[0]));
 
 				int res = gl.glGetUniformLocation(renderingProgram, "res");
 				gl.glUniform2f(res, width, height);
@@ -272,10 +277,15 @@ class Renderer implements GLEventListener {
 				int p = a.checkCollision(player);
 				
 				if (p == 1) {
-					
-					System.out.println("Player Hit");
+						
 					player.lives--;
 					player.reset();
+					
+					System.out.println(player.lives);
+					if (player.lives == 0) {
+						
+						scene = Scene.GAME_OVER;
+					}
 				}
 				
 				for (int j = 0; j < player.bullets.length; j++) {
@@ -292,18 +302,16 @@ class Renderer implements GLEventListener {
 							
 							case BIG:
 								
-								asteroids.add(new Asteroid(Size.MEDIUM, a.posX, a.posY));
-								asteroids.add(new Asteroid(Size.MEDIUM, a.posX, a.posY));
-								asteroids.add(new Asteroid(Size.MEDIUM, a.posX, a.posY));
-								
+								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
+								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
+								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
 								break;
 								
 							case MEDIUM:
 								
-								asteroids.add(new Asteroid(Size.SMALL, a.posX, a.posY));
-								asteroids.add(new Asteroid(Size.SMALL, a.posX, a.posY));
-								asteroids.add(new Asteroid(Size.SMALL, a.posX, a.posY));
-								
+								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
+								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
+								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
 								break;
 						}
 						
@@ -329,7 +337,7 @@ class Renderer implements GLEventListener {
 			gl.glUniform2f(scale, player.sprite.scale[0], player.sprite.scale[1]);
 
 			int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-			gl.glUniform2f(pos, player.posX - (player.scale / 2), player.posY - (player.scale / 2));
+			gl.glUniform2f(pos, player.sprite.position[0] - (player.sprite.scale[0]), player.sprite.position[1] - (player.sprite.scale[0]));
 
 			int res = gl.glGetUniformLocation(renderingProgram, "res");
 			gl.glUniform2f(res, width, height);
@@ -438,7 +446,7 @@ class Renderer implements GLEventListener {
 			blast.setIndex(7);
 			blast.setScale(45, 90);
 			blast.setSize(64, 128);
-			blast.setPosition(player.posX, player.posY);
+			blast.setPosition(player.sprite.position[0], player.sprite.position[1]);
 
 			//shader uniform variables
 			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
@@ -448,7 +456,7 @@ class Renderer implements GLEventListener {
 			gl.glUniform2f(scale, blast.scale[0], blast.scale[1]);
 
 			int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-			gl.glUniform2f(pos, blast.position[0] - (blast.scale[0]), blast.position[1] - (blast.scale[1]));
+			gl.glUniform2f(pos, blast.position[0] - blast.scale[0], blast.position[1] - blast.scale[1]);
 
 			int res = gl.glGetUniformLocation(renderingProgram, "res");
 			gl.glUniform2f(res, width, height);

@@ -11,12 +11,12 @@ import java.util.ArrayList;
  * @author karma
  */
 
-enum Scene {TITLE, GAME};
+enum Scene {TITLE, GAME, GAME_OVER};
 
 public class AsteroidsJOGL extends javax.swing.JFrame {
 	
 	public Ship player;
-	public ArrayList<Asteroid> asteroids;//Asteroid[] asteroids;
+	public ArrayList<Asteroid> asteroids;
 	public Renderer rend;
 
 	public AsteroidsJOGL() {
@@ -51,7 +51,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 ani.start();
 
                 setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-                setTitle("Java Sprite Viewer");
+                setTitle("Asteroids JOGL");
 
                 gLJPanel1.setPreferredSize(new java.awt.Dimension(512, 512));
                 gLJPanel1.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -67,11 +67,11 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 gLJPanel1.setLayout(gLJPanel1Layout);
                 gLJPanel1Layout.setHorizontalGroup(
                         gLJPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 705, Short.MAX_VALUE)
+                        .addGap(0, 428, Short.MAX_VALUE)
                 );
                 gLJPanel1Layout.setVerticalGroup(
                         gLJPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 543, Short.MAX_VALUE)
+                        .addGap(0, 407, Short.MAX_VALUE)
                 );
 
                 getContentPane().add(gLJPanel1, java.awt.BorderLayout.CENTER);
@@ -112,8 +112,8 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 
 							bullet.visable = true;
 							bullet.rot = player.rot;
-							bullet.posX = player.posX;
-							bullet.posY = player.posY;
+							bullet.sprite.position[0] = player.sprite.position[0];
+							bullet.sprite.position[1] = player.sprite.position[1];
 							bullet.vX = player.dX * 8;
 							bullet.vY = player.dY * 8;
 							break;
