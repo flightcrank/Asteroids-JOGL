@@ -23,12 +23,27 @@ class Renderer implements GLEventListener {
 	Ship player;
 	ArrayList<Asteroid> asteroids;
 	Scene scene;
+	int score;
+	Sprite2D title;
+	Sprite2D blast;
 	
 	public Renderer(Ship player, ArrayList asteroids, Scene scene) {
 		
 		this.player = player;
 		this.asteroids = asteroids;
 		this.scene = scene;
+		this.score = 0;
+		
+		this.title = new Sprite2D(512, 512);
+		title.setIndex(3);
+		title.setScale(512, 128);
+		title.setSize(512, 128);
+		title.setPosition(0, -300);
+		
+		blast = new Sprite2D(512, 512);
+		blast.setIndex(6);
+		blast.setScale(45, 25);
+		blast.setSize(64, 64);
 	}
 	
 	@Override
@@ -113,9 +128,9 @@ class Renderer implements GLEventListener {
 		switch(scene) {
 			
 			case TITLE:
-				
+
+				drawAsteroids(gl);
 				drawTitle(gl);
-				drawString("PRESS SPACE TO START", 0, 150, gl);
 				break;
 				
 			case GAME:
@@ -125,6 +140,7 @@ class Renderer implements GLEventListener {
 				drawBullets(gl);
 				drawAsteroids(gl);
 				drawLives(gl);
+				drawScore(gl);
 				break;
 				
 			case GAME_OVER:
@@ -132,16 +148,12 @@ class Renderer implements GLEventListener {
 				drawAsteroids(gl);
 				drawString("GAME OVER", 0, 0, gl);
 				break;
-				
-			default:
-				break;
 		}
 	}
 	
 	@Override
 	public void dispose(GLAutoDrawable glAutoDrawable) {
-		
-		
+
 	}
 	
 	@Override
@@ -201,6 +213,16 @@ class Renderer implements GLEventListener {
 		return vfprogram;
 	}
 	
+	public void drawScore(GL3 gl) {
+		
+		
+		String str = String.format("%06d", score);
+		int yPos = (height / 2) - 15;
+		
+		drawString(str, 0, -yPos, gl);
+		
+	}
+	
 	public void drawBullets(GL3 gl) {
 		
 		for (Bullet bullet : player.bullets) {
@@ -221,6 +243,9 @@ class Renderer implements GLEventListener {
 
 				int res = gl.glGetUniformLocation(renderingProgram, "res");
 				gl.glUniform2f(res, width, height);
+				
+				int origin = gl.glGetUniformLocation(renderingProgram, "origin");
+				gl.glUniform2f(origin, 0, 0);
 
 				this.vBuf = Buffers.newDirectFloatBuffer(bullet.sprite.verts);
 				this.tBuf = Buffers.newDirectFloatBuffer(bullet.sprite.uvs);
@@ -260,6 +285,9 @@ class Renderer implements GLEventListener {
 
 				int res = gl.glGetUniformLocation(renderingProgram, "res");
 				gl.glUniform2f(res, width, height);
+				
+				int origin = gl.glGetUniformLocation(renderingProgram, "origin");
+				gl.glUniform2f(origin, 0, 0);
 
 				this.vBuf = Buffers.newDirectFloatBuffer(a.sprite.verts);
 				this.tBuf = Buffers.newDirectFloatBuffer(a.sprite.uvs);
@@ -302,6 +330,7 @@ class Renderer implements GLEventListener {
 							
 							case BIG:
 								
+								score += 10;
 								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
 								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
 								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
@@ -309,9 +338,15 @@ class Renderer implements GLEventListener {
 								
 							case MEDIUM:
 								
+								score += 20;
 								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
 								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
 								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
+								break;
+								
+							case SMALL:
+								
+								score += 30;
 								break;
 						}
 						
@@ -325,9 +360,24 @@ class Renderer implements GLEventListener {
 	
 	public void drawShip(GL3 gl) {
 		
+		if (player.sprite.scale[0] < 22) {
+			
+			float ease = 0.2f;
+			float targetX = 22.5f;
+			float targetY = 22.5f;
+			float dX = targetX - player.sprite.scale[0];
+			float dY = targetY - player.sprite.scale[1];
+			float vX = dX * ease;
+			float vY = dY * ease;
+			player.sprite.scale[0] += vX;
+			player.sprite.scale[1] += vY;
+		}
+		
 		if (player.lives > 0) {
 
 			player.update(width, height);
+			blast.setPosition(player.sprite.position[0], player.sprite.position[1]);
+			
 			//System.out.println(player.posX + ", " + player.posY);
 			//shader uniform variables
 			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
@@ -341,6 +391,9 @@ class Renderer implements GLEventListener {
 
 			int res = gl.glGetUniformLocation(renderingProgram, "res");
 			gl.glUniform2f(res, width, height);
+			
+			int origin = gl.glGetUniformLocation(renderingProgram, "origin");
+			gl.glUniform2f(origin, 0, 0);
 
 			this.vBuf = Buffers.newDirectFloatBuffer(player.sprite.verts);
 			this.tBuf = Buffers.newDirectFloatBuffer(player.sprite.uvs);
@@ -363,11 +416,22 @@ class Renderer implements GLEventListener {
 	
 	public void drawTitle(GL3 gl) {
 		
-		Sprite2D title = new Sprite2D(512, 512);
-		title.setIndex(3);
-		title.setScale(512, 128);
-		title.setSize(512, 128);
-		title.setPosition(0, -100);
+		if (Math.abs(title.position[1]) > 101) {
+			
+			float ease = 0.06f;
+			float targetX = 0f;
+			float targetY = -100f;
+			float dX = targetX - title.position[0];
+			float dY = targetY - title.position[1];
+			float vX = dX * ease;
+			float vY = dY * ease;
+			title.position[0] += vX;
+			title.position[1] += vY;
+			
+		} else {
+			
+			drawString("PRESS SPACE TO START", 0, 150, gl);
+		}
 		
 		//shader uniform variables
 		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
@@ -422,6 +486,9 @@ class Renderer implements GLEventListener {
 
 			int res = gl.glGetUniformLocation(renderingProgram, "res");
 			gl.glUniform2f(res, width, height);
+			
+			int origin = gl.glGetUniformLocation(renderingProgram, "origin");
+			gl.glUniform2f(origin, 0, 0);
 
 			this.vBuf = Buffers.newDirectFloatBuffer(lives.verts);
 			this.tBuf = Buffers.newDirectFloatBuffer(lives.uvs);
@@ -441,12 +508,15 @@ class Renderer implements GLEventListener {
 	public void drawBlast(GL3 gl) {
 		
 		if (player.thrust) {
+		
+			if (blast.scale[1] < 25) {
 			
-			Sprite2D blast = new Sprite2D(512, 512);
-			blast.setIndex(7);
-			blast.setScale(45, 90);
-			blast.setSize(64, 128);
-			blast.setPosition(player.sprite.position[0], player.sprite.position[1]);
+				float ease = 0.01f;
+				float targetY = 25f;
+				float dY = targetY - blast.scale[1];
+				float vY = dY * ease;
+				blast.scale[1] += vY;
+			}			
 
 			//shader uniform variables
 			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
@@ -460,6 +530,9 @@ class Renderer implements GLEventListener {
 
 			int res = gl.glGetUniformLocation(renderingProgram, "res");
 			gl.glUniform2f(res, width, height);
+			
+			int origin = gl.glGetUniformLocation(renderingProgram, "origin");
+			gl.glUniform2f(origin, 0f, -1.5f);
 
 			this.vBuf = Buffers.newDirectFloatBuffer(blast.verts);
 			this.tBuf = Buffers.newDirectFloatBuffer(blast.uvs);
@@ -473,6 +546,10 @@ class Renderer implements GLEventListener {
 
 			gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
 			//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+		
+		} else {
+			
+			blast.setScale(45, 25);
 		}
 	}
 	
@@ -510,6 +587,9 @@ class Renderer implements GLEventListener {
 		
 		int res = gl.glGetUniformLocation(renderingProgram, "res");
 		gl.glUniform2f(res, width, height);
+		
+		int origin = gl.glGetUniformLocation(renderingProgram, "origin");
+		gl.glUniform2f(origin, 0, 0);
 		
 		this.vBuf = Buffers.newDirectFloatBuffer(sprite.verts);
 		this.tBuf = Buffers.newDirectFloatBuffer(sprite.uvs);

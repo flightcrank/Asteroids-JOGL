@@ -23,7 +23,7 @@ public class Ship extends GameObject {
 		bullets = new Bullet[3];
 		sprite = new Sprite2D(512, 512);
 		sprite.setIndex(0);
-		sprite.setScale(45);
+		sprite.setScale(1);
 		sprite.setSize(64, 64);
 
 		//set up the bullet propertys
@@ -43,6 +43,7 @@ public class Ship extends GameObject {
 		vX = 0.0f;
 		vY = 0.0f;
 		rotSpeed = 0.0f;
+		sprite.setScale(1);
 	}
 
 	public void setDirection() {

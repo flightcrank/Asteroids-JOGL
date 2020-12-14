@@ -8,13 +8,17 @@ uniform mat4 ortho;
 uniform vec2 scale;
 uniform vec2 pos;
 uniform vec2 res;
+uniform vec2 origin;
 
 out vec2 uv;
 
 void main() {
 	
+	//changes the point at which the verts scaled or rotated from
+	vec4 o_point = vertex + vec4(origin.xy, 0.0, 0.0);
+
 	//scale verts
-	vec4 size = vertex * vec4(scale.x, -scale.y, 1.0, 1.0);
+	vec4 size = o_point * vec4(scale.x, -scale.y, 1.0, 1.0);
 
 	//rotate verts
 	vec4 rot = size * mat4(rotate);

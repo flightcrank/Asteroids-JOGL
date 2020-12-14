@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * @author karma
  */
 
-enum Scene {TITLE, GAME, GAME_OVER};
+enum Scene {TITLE, GAME, GAME_OVER, PLAY_AGAIN};
 
 public class AsteroidsJOGL extends javax.swing.JFrame {
 	
@@ -23,7 +23,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 		
 		player = new Ship();
 		asteroids = new ArrayList<>();
-		
+
 		for(int i = 0; i < 3; i++) {
 		
 			asteroids.add(new Asteroid(Size.BIG));
@@ -80,7 +80,13 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
         }// </editor-fold>//GEN-END:initComponents
 
         private void gLJPanel1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyPressed
-                			
+                
+		if (rend.scene == Scene.GAME_OVER) {
+			
+			System.out.println("test");
+			//rend.scene = Scene.TITLE;
+		}
+		
 		switch (evt.getKeyCode()) {
 
 			case KeyEvent.VK_A:
@@ -104,7 +110,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 					
 					rend.scene = Scene.GAME;
 					
-				} else if (rend.scene == Scene.GAME){
+				} else if (rend.scene == Scene.GAME) {
 					
 					for (Bullet bullet : player.bullets) {
 
@@ -174,22 +180,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 		} catch (javax.swing.UnsupportedLookAndFeelException ex) {
 			java.util.logging.Logger.getLogger(AsteroidsJOGL.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
 		}
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
-		//</editor-fold>
+		//</editor-fold>	
 
 		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
