@@ -306,6 +306,7 @@ class Renderer implements GLEventListener {
 				for(int j = 0; j < player.parts.length; j++) {
 					
 					player.parts[j].sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
+					player.parts[j].sprite.rot = player.sprite.rot;
 					player.parts[j].visable = true;
 					player.parts[j].spawnTime = System.currentTimeMillis();
 				}
@@ -451,11 +452,7 @@ class Renderer implements GLEventListener {
 	}
 	
 	public void drawString(String str, int x, int y, GL3 gl) {
-		
-		String fontSprites = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-		Sprite2D sprite = new Sprite2D(512, 512);
-		sprite.setScale(22);
-		
+
 		TextChar tc = new TextChar();
 		
 		int pxLen = str.length() * (int) tc.sprite.scale[0] * 2;
@@ -463,12 +460,12 @@ class Renderer implements GLEventListener {
 
 		for (int i = 0; i < str.length(); i++) {
 			
-			int charIndex = fontSprites.indexOf(str.charAt(i));
+			int charIndex = tc.fontLayout.indexOf(str.charAt(i));
 			int offset = 128 + 4;	//index offset of where the first char starts in the sprite sheet.
 			int index = charIndex + offset + (charIndex / 12) * 4;
 			tc.sprite.setIndex(index);
 			tc.sprite.setSize(32, 32);
-			tc.sprite.setPosition(x + i * sprite.scale[1] * 2, y);
+			tc.sprite.setPosition(x + i * tc.sprite.scale[1] * 2, y);
 			drawGameObject(gl, tc);
 		}
 	}
@@ -490,26 +487,5 @@ class Renderer implements GLEventListener {
 	}
 }
 
-class TextChar extends GameObject {
-	
-	String fontLayout;
-	
-	public TextChar() {
-		
-		this.fontLayout = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-		this.sprite = new Sprite2D(512, 512);
-		this.sprite.setScale(22);
-	}
-}
 
-class Parts extends GameObject {
-	
-	long spawnTime;		//time the object was spawned
-	float rotSpeed;
-	
-	public Parts() {
-		
-		this.spawnTime = 0;
-		this.visable = false;
-	}
-}
+
