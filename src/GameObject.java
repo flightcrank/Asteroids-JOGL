@@ -17,7 +17,4 @@ public class GameObject {
 		vX = 0.0f;
 		vY = 0.0f;
 	}
-	
-	//each instance must overide this method
-	//public void update(int w, int h);
 }

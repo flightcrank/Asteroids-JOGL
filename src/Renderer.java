@@ -25,7 +25,6 @@ class Renderer implements GLEventListener {
 	GameObject blast;
 	ArrayList<Asteroid> asteroids;
 	Ship player;
-	Parts[] parts;
 	Scene scene;
 	
 	public Renderer(Ship player, ArrayList asteroids, Scene scene) {
@@ -49,13 +48,6 @@ class Renderer implements GLEventListener {
 		blast.sprite.setScale(45, 25);
 		blast.sprite.setSize(64, 64);
 		blast.sprite.setOrigin(0f, -1.5f);
-				
-		this.parts = new Parts[4];
-		
-		for (int i =0; i < parts.length; i++) {
-			
-			parts[i] = new Parts(i + 1);			
-		}
 	}
 	
 	@Override
@@ -154,11 +146,13 @@ class Renderer implements GLEventListener {
 				drawAsteroids(gl);
 				drawLives(gl);
 				drawScore(gl);
+				drawParts(gl);
 				break;
 				
 			case GAME_OVER:
 				
 				drawAsteroids(gl);
+				drawParts(gl);
 				drawString("GAME OVER", 0, 0, gl);
 				break;
 		}
@@ -255,6 +249,28 @@ class Renderer implements GLEventListener {
 		//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
 	}
 	
+	public void drawParts(GL3 gl) {
+		
+		for (int i = 0; i < player.parts.length; i ++) {
+			
+			if (player.parts[i].visable == true) {
+
+				player.parts[i].sprite.position[0] += player.parts[i].vX;
+				player.parts[i].sprite.position[1] += player.parts[i].vY;
+				drawGameObject(gl, player.parts[i]);
+				
+				long currentTime = System.currentTimeMillis();
+				long diff = currentTime - player.parts[i].spawnTime;
+				
+				if (diff >= 1500 && player.lives > 0 ) {
+				
+					player.parts[i].visable = false;
+					player.visable = true;
+				}
+			}			
+		}
+	}
+	
 	public void drawScore(GL3 gl) {	
 		
 		String str = String.format("%06d", score);
@@ -275,67 +291,70 @@ class Renderer implements GLEventListener {
 	}
 	
 	public void drawAsteroids(GL3 gl) {
-		
+				
 		for (int i = 0; i < asteroids.size(); i++) {
 			
 			Asteroid a = asteroids.get(i);
 			
-			if (a.visable == true) {
-				
-				a.update(width, height);
-				drawGameObject(gl, a);
-				
-				int p = a.checkCollision(player);
-				
-				if (p == 1) {
-						
-					player.lives--;
-					player.reset();
+			a.update(width, height);
+			drawGameObject(gl, a);
+
+			boolean p = a.checkCollision(player);
+
+			if (p == true) {
+
+				for(int j = 0; j < player.parts.length; j++) {
 					
-					System.out.println(player.lives);
-					if (player.lives == 0) {
-						
-						scene = Scene.GAME_OVER;
-					}
+					player.parts[j].sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
+					player.parts[j].visable = true;
+					player.parts[j].spawnTime = System.currentTimeMillis();
 				}
 				
-				for (int j = 0; j < player.bullets.length; j++) {
+				player.visable = false;
+				player.lives--;
+				player.reset();
+				
+				if (player.lives == 0) {
 					
-					Bullet bullet = player.bullets[j];
-					
-					int b = a.checkCollision(bullet);
-					
-					if (b == 1 && bullet.visable == true) {
-						
-						bullet.visable = false;
-						
-						switch(a.size) {
-							
-							case BIG:
-								
-								score += 10;
-								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
-								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
-								asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
-								break;
-								
-							case MEDIUM:
-								
-								score += 20;
-								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
-								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
-								asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
-								break;
-								
-							case SMALL:
-								
-								score += 30;
-								break;
-						}
-						
-						System.out.println("Bullet Hit");
-						a.visable = false;
-					}
+					player.visable = false;
+					scene = Scene.GAME_OVER;
+				}
+			}
+
+			for (int j = 0; j < player.bullets.length; j++) {
+
+				Bullet bullet = player.bullets[j];
+
+				boolean b = a.checkCollision(bullet);
+
+				if (b == true && bullet.visable == true) {
+
+					asteroids.remove(i);
+					bullet.visable = false;
+
+					switch(a.size) {
+
+						case BIG:
+
+							score += 10;
+							asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
+							asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
+							asteroids.add(new Asteroid(Size.MEDIUM, a.sprite.position[0], a.sprite.position[1]));
+							break;
+
+						case MEDIUM:
+
+							score += 20;
+							asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
+							asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
+							asteroids.add(new Asteroid(Size.SMALL, a.sprite.position[0], a.sprite.position[1]));
+							break;
+
+						case SMALL:
+
+							score += 30;
+							break;
+					}	
 				}
 			}	
 		}
@@ -343,25 +362,26 @@ class Renderer implements GLEventListener {
 	
 	public void drawShip(GL3 gl) {
 		
-		if (player.sprite.scale[0] < 22) {
+		if (player.visable == true && player.lives > 0) {
 			
-			float ease = 0.2f;
-			float targetX = 22.5f;
-			float targetY = 22.5f;
-			float dX = targetX - player.sprite.scale[0];
-			float dY = targetY - player.sprite.scale[1];
-			float vX = dX * ease;
-			float vY = dY * ease;
-			player.sprite.scale[0] += vX;
-			player.sprite.scale[1] += vY;
-		}
-		
-		if (player.lives > 0) {
-
+			//scale ship tween
+			if (player.sprite.scale[0] < 22) {
+			
+				float ease = 0.2f;
+				float targetX = 22.5f;
+				float targetY = 22.5f;
+				float dX = targetX - player.sprite.scale[0];
+				float dY = targetY - player.sprite.scale[1];
+				float vX = dX * ease;
+				float vY = dY * ease;
+				player.sprite.scale[0] += vX;
+				player.sprite.scale[1] += vY;
+			}
+			
 			player.update(width, height);
 			blast.sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
 			drawGameObject(gl, player);
-		
+			
 		} else {
 			
 			player.visable = false;
@@ -410,7 +430,7 @@ class Renderer implements GLEventListener {
 	
 	public void drawBlast(GL3 gl) {
 			
-		if (player.thrust) {
+		if (player.thrust && player.visable == true) {
 		
 			if (blast.sprite.scale[1] < 25) {
 			
@@ -470,18 +490,6 @@ class Renderer implements GLEventListener {
 	}
 }
 
-class Parts extends GameObject {
-	
-	public Parts(int index) {
-		
-		sprite = new Sprite2D(512, 512);
-		sprite.setIndex(index);
-		sprite.setScale(45, 25);
-		sprite.setSize(64, 64);
-		visable = false;
-	}
-}
-
 class TextChar extends GameObject {
 	
 	String fontLayout;
@@ -491,5 +499,17 @@ class TextChar extends GameObject {
 		this.fontLayout = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 		this.sprite = new Sprite2D(512, 512);
 		this.sprite.setScale(22);
+	}
+}
+
+class Parts extends GameObject {
+	
+	long spawnTime;		//time the object was spawned
+	float rotSpeed;
+	
+	public Parts() {
+		
+		this.spawnTime = 0;
+		this.visable = false;
 	}
 }

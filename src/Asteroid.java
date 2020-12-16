@@ -55,8 +55,7 @@ public class Asteroid extends GameObject {
 		vY = (float) ((Math.random() - .5) * 2) * .5f;
 		rotSpeed = (float) ((Math.random() - .5) * 2) * .03f;
 	}
-	
-	//@Override
+
 	public void update(int w, int h) {
 		
 		sprite.position[0] += vX;
@@ -76,17 +75,19 @@ public class Asteroid extends GameObject {
 		sprite.position[1] = (sprite.position[1] < -halfHeight) ? sprite.position[1] =   halfHeight : sprite.position[1];
 	}
 	
-	public int checkCollision(GameObject obj) {
+	public boolean checkCollision(GameObject obj) {
 		
-		double a = sprite.position[0] - obj.sprite.position[0];
-		double b = sprite.position[1] - obj.sprite.position[1];
-		double dist = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));	//distance between asteroid and obj
+		if (obj.visable == true) {
+			
+			double a = sprite.position[0] - obj.sprite.position[0];
+			double b = sprite.position[1] - obj.sprite.position[1];
+			double dist = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));	//distance between asteroid and obj
 		
-		if (dist < sprite.scale[0]) {
-						
-			return 1;
+			if (dist < sprite.scale[0]) {
+
+				return true;
+			}
 		}
-		
-		return 0;
+		return false;
 	}
 }
