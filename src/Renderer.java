@@ -14,18 +14,19 @@ class Renderer implements GLEventListener {
 	int vbo[] = new int[2]; //vertex buffer object
 	int texo; 		//texture id
 	int numVerts = 0;
-	long startTime = 0;
 	int width;
 	int height;
+	int score;
+	long startTime = 0;
 	FloatBuffer vBuf;
 	FloatBuffer tBuf;
 	GLAutoDrawable glAutoDrawable;
-	Ship player;
+	GameObject title;
+	GameObject blast;
 	ArrayList<Asteroid> asteroids;
+	Ship player;
+	Parts[] parts;
 	Scene scene;
-	int score;
-	Sprite2D title;
-	Sprite2D blast;
 	
 	public Renderer(Ship player, ArrayList asteroids, Scene scene) {
 		
@@ -34,16 +35,27 @@ class Renderer implements GLEventListener {
 		this.scene = scene;
 		this.score = 0;
 		
-		this.title = new Sprite2D(512, 512);
-		title.setIndex(3);
-		title.setScale(512, 128);
-		title.setSize(512, 128);
-		title.setPosition(0, -300);
+		this.title = new GameObject();
+		title.sprite = new Sprite2D(512, 512);
+		title.sprite.setIndex(3);
+		title.sprite.rot = 0.3f;
+		title.sprite.setScale(512, 128);
+		title.sprite.setSize(512, 128);
+		title.sprite.setPosition(0, -300);
 		
-		blast = new Sprite2D(512, 512);
-		blast.setIndex(6);
-		blast.setScale(45, 25);
-		blast.setSize(64, 64);
+		blast = new GameObject();
+		blast.sprite = new Sprite2D(512, 512);
+		blast.sprite.setIndex(6);
+		blast.sprite.setScale(45, 25);
+		blast.sprite.setSize(64, 64);
+		blast.sprite.setOrigin(0f, -1.5f);
+				
+		this.parts = new Parts[4];
+		
+		for (int i =0; i < parts.length; i++) {
+			
+			parts[i] = new Parts(i + 1);			
+		}
 	}
 	
 	@Override
@@ -91,13 +103,6 @@ class Renderer implements GLEventListener {
 		
 		//use compiled shaders
 		gl.glUseProgram(renderingProgram);
-		
-		//shader uniform variables
-		int panelResolution = gl.glGetUniformLocation(renderingProgram, "panelResolution");
-		gl.glUniform2f(panelResolution, glAutoDrawable.getSurfaceWidth(), glAutoDrawable.getSurfaceHeight());
-
-		int time = gl.glGetUniformLocation(renderingProgram, "time");
-		gl.glUniform1f(time, System.currentTimeMillis() - this.startTime);
 				
 		// activate texture unit #0 and bind it to the texture object
 		gl.glActiveTexture(GL3.GL_TEXTURE0);
@@ -118,11 +123,19 @@ class Renderer implements GLEventListener {
 		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 	
 		//shader uniform variables
+		int time = gl.glGetUniformLocation(renderingProgram, "time");
+		gl.glUniform1f(time, System.currentTimeMillis() - this.startTime);
+		
 		int ortho = gl.glGetUniformLocation(renderingProgram, "ortho");
 		gl.glUniformMatrix4fv(ortho, 1, false, Buffers.newDirectFloatBuffer(Matrix.orthographic(0f, width, 0f, height, -1f, 1f)));
 		
+		//flag to toggle SDF rendering on or off
 		int flag = gl.glGetUniformLocation(renderingProgram, "flag");
 		gl.glUniform1i(flag, 1);
+		
+		//screen resolution
+		int res = gl.glGetUniformLocation(renderingProgram, "res");
+		gl.glUniform2f(res, width, height);
 		
 		//DRAW
 		switch(scene) {
@@ -213,14 +226,40 @@ class Renderer implements GLEventListener {
 		return vfprogram;
 	}
 	
-	public void drawScore(GL3 gl) {
-		
+	public void drawGameObject(GL3 gl, GameObject obj) {
+			
+		//shader uniform variables
+		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
+		gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(obj.sprite.rot)));
+
+		int scale = gl.glGetUniformLocation(renderingProgram, "scale");
+		gl.glUniform2f(scale, obj.sprite.scale[0], obj.sprite.scale[1]);
+
+		int pos = gl.glGetUniformLocation(renderingProgram, "pos");
+		gl.glUniform2f(pos, obj.sprite.position[0] - obj.sprite.scale[0], obj.sprite.position[1] - obj.sprite.scale[1]);
+
+		int origin = gl.glGetUniformLocation(renderingProgram, "origin");
+		gl.glUniform2f(origin, obj.sprite.origin[0], obj.sprite.origin[1]);
+
+		this.vBuf = Buffers.newDirectFloatBuffer(obj.sprite.verts);
+		this.tBuf = Buffers.newDirectFloatBuffer(obj.sprite.uvs);
+		this.numVerts = obj.sprite.verts.length / 3;
+
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
+		gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
+
+		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
+		gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
+
+		gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
+		//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+	}
+	
+	public void drawScore(GL3 gl) {	
 		
 		String str = String.format("%06d", score);
-		int yPos = (height / 2) - 15;
-		
-		drawString(str, 0, -yPos, gl);
-		
+		int yPos = (height / 2) - 15;	
+		drawString(str, 0, -yPos, gl);	
 	}
 	
 	public void drawBullets(GL3 gl) {
@@ -230,35 +269,7 @@ class Renderer implements GLEventListener {
 			if (bullet.visable == true) {
 		
 				bullet.update((int) width, (int) height);
-
-				//shader uniform variables
-				int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-				gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(bullet.rot)));
-				
-				int scale = gl.glGetUniformLocation(renderingProgram, "scale");
-				gl.glUniform2f(scale, player.sprite.scale[0], player.sprite.scale[1]);
-
-				int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-				gl.glUniform2f(pos, bullet.sprite.position[0] - (bullet.sprite.scale[0]), bullet.sprite.position[1] - (bullet.sprite.scale[1]));
-
-				int res = gl.glGetUniformLocation(renderingProgram, "res");
-				gl.glUniform2f(res, width, height);
-				
-				int origin = gl.glGetUniformLocation(renderingProgram, "origin");
-				gl.glUniform2f(origin, 0, 0);
-
-				this.vBuf = Buffers.newDirectFloatBuffer(bullet.sprite.verts);
-				this.tBuf = Buffers.newDirectFloatBuffer(bullet.sprite.uvs);
-				this.numVerts = bullet.sprite.verts.length / 3;
-
-				gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-				gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
-
-				gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
-				gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
-
-				gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-				//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+				drawGameObject(gl, bullet);
 			}	
 		}
 	}
@@ -272,35 +283,7 @@ class Renderer implements GLEventListener {
 			if (a.visable == true) {
 				
 				a.update(width, height);
-				
-				//shader uniform variables
-				int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-				gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(a.rot)));
-				
-				int scale = gl.glGetUniformLocation(renderingProgram, "scale");
-				gl.glUniform2f(scale, a.sprite.scale[0], a.sprite.scale[1]);
-
-				int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-				gl.glUniform2f(pos, a.sprite.position[0] - (a.sprite.scale[0]), a.sprite.position[1] - (a.sprite.scale[0]));
-
-				int res = gl.glGetUniformLocation(renderingProgram, "res");
-				gl.glUniform2f(res, width, height);
-				
-				int origin = gl.glGetUniformLocation(renderingProgram, "origin");
-				gl.glUniform2f(origin, 0, 0);
-
-				this.vBuf = Buffers.newDirectFloatBuffer(a.sprite.verts);
-				this.tBuf = Buffers.newDirectFloatBuffer(a.sprite.uvs);
-				this.numVerts = a.sprite.verts.length / 3;
-
-				gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-				gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
-
-				gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
-				gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
-
-				gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-				//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+				drawGameObject(gl, a);
 				
 				int p = a.checkCollision(player);
 				
@@ -376,37 +359,8 @@ class Renderer implements GLEventListener {
 		if (player.lives > 0) {
 
 			player.update(width, height);
-			blast.setPosition(player.sprite.position[0], player.sprite.position[1]);
-			
-			//System.out.println(player.posX + ", " + player.posY);
-			//shader uniform variables
-			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-			gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(player.rot)));
-
-			int scale = gl.glGetUniformLocation(renderingProgram, "scale");
-			gl.glUniform2f(scale, player.sprite.scale[0], player.sprite.scale[1]);
-
-			int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-			gl.glUniform2f(pos, player.sprite.position[0] - (player.sprite.scale[0]), player.sprite.position[1] - (player.sprite.scale[0]));
-
-			int res = gl.glGetUniformLocation(renderingProgram, "res");
-			gl.glUniform2f(res, width, height);
-			
-			int origin = gl.glGetUniformLocation(renderingProgram, "origin");
-			gl.glUniform2f(origin, 0, 0);
-
-			this.vBuf = Buffers.newDirectFloatBuffer(player.sprite.verts);
-			this.tBuf = Buffers.newDirectFloatBuffer(player.sprite.uvs);
-			this.numVerts = player.sprite.verts.length / 3;
-
-			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-			gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
-
-			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
-			gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
-
-			gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-			//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+			blast.sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
+			drawGameObject(gl, player);
 		
 		} else {
 			
@@ -416,140 +370,63 @@ class Renderer implements GLEventListener {
 	
 	public void drawTitle(GL3 gl) {
 		
-		if (Math.abs(title.position[1]) > 101) {
+		if (Math.abs(title.sprite.position[1]) > 101) {
 			
 			float ease = 0.06f;
 			float targetX = 0f;
 			float targetY = -100f;
-			float dX = targetX - title.position[0];
-			float dY = targetY - title.position[1];
+			float dX = targetX - title.sprite.position[0];
+			float dY = targetY - title.sprite.position[1];
 			float vX = dX * ease;
 			float vY = dY * ease;
-			title.position[0] += vX;
-			title.position[1] += vY;
+			title.sprite.position[0] += vX;
+			title.sprite.position[1] += vY;
 			
 		} else {
 			
 			drawString("PRESS SPACE TO START", 0, 150, gl);
 		}
 		
-		//shader uniform variables
-		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-		gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(0.3f)));
-		
-		int scale = gl.glGetUniformLocation(renderingProgram, "scale");
-		gl.glUniform2f(scale, title.scale[0], title.scale[1]);
-		
-		int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-		gl.glUniform2f(pos, title.position[0] - (title.scale[0]), title.position[1] - (title.scale[1]));
-		
-		int res = gl.glGetUniformLocation(renderingProgram, "res");
-		gl.glUniform2f(res, width, height);
-		
-		this.vBuf = Buffers.newDirectFloatBuffer(title.verts);
-		this.tBuf = Buffers.newDirectFloatBuffer(title.uvs);
-		this.numVerts = title.verts.length / 3;
-		
-		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-		gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
-		
-		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
-		gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
-
-		gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-		//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
+		drawGameObject(gl, title);
 	}
 	
 	public void drawLives(GL3 gl) {
-		
-		Sprite2D lives = new Sprite2D(512, 512);
-		lives.setIndex(0);
-		lives.setScale(24, 24);
-		lives.setSize(64, 64);
-		lives.setPosition(0, 0);
+			
+		GameObject lives = new GameObject();
+		lives.sprite = new Sprite2D(512, 512);
+		lives.sprite.setIndex(0);
+		lives.sprite.setScale(24, 24);
+		lives.sprite.setSize(64, 64);
 		
 		float[] translate = {-width / 2, -height / 2};
 		
 		for (int i = 0; i < player.lives; i++) {
 			
-			int offset =  i * (int) (lives.scale[0] + 10);
-			
-			//shader uniform variables
-			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-			gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(0)));
-
-			int scale = gl.glGetUniformLocation(renderingProgram, "scale");
-			gl.glUniform2f(scale, lives.scale[0], lives.scale[1]);
-
-			int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-			gl.glUniform2f(pos, 0 + translate[0] + offset, 0 + translate[1]);
-
-			int res = gl.glGetUniformLocation(renderingProgram, "res");
-			gl.glUniform2f(res, width, height);
-			
-			int origin = gl.glGetUniformLocation(renderingProgram, "origin");
-			gl.glUniform2f(origin, 0, 0);
-
-			this.vBuf = Buffers.newDirectFloatBuffer(lives.verts);
-			this.tBuf = Buffers.newDirectFloatBuffer(lives.uvs);
-			this.numVerts = lives.verts.length / 3;
-
-			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-			gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
-
-			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
-			gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
-
-			gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-			//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);	
+			int offset =  i * (int) (lives.sprite.scale[0] + 10);
+			lives.sprite.setPosition(offset + translate[0] + lives.sprite.scale[0], translate[1] + lives.sprite.scale[1]);
+			drawGameObject(gl, lives);
 		}
 	}
 	
 	public void drawBlast(GL3 gl) {
-		
+			
 		if (player.thrust) {
 		
-			if (blast.scale[1] < 25) {
+			if (blast.sprite.scale[1] < 25) {
 			
 				float ease = 0.01f;
 				float targetY = 25f;
-				float dY = targetY - blast.scale[1];
+				float dY = targetY - blast.sprite.scale[1];
 				float vY = dY * ease;
-				blast.scale[1] += vY;
+				blast.sprite.scale[1] += vY;
 			}			
-
-			//shader uniform variables
-			int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-			gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(player.rot)));
-
-			int scale = gl.glGetUniformLocation(renderingProgram, "scale");
-			gl.glUniform2f(scale, blast.scale[0], blast.scale[1]);
-
-			int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-			gl.glUniform2f(pos, blast.position[0] - blast.scale[0], blast.position[1] - blast.scale[1]);
-
-			int res = gl.glGetUniformLocation(renderingProgram, "res");
-			gl.glUniform2f(res, width, height);
 			
-			int origin = gl.glGetUniformLocation(renderingProgram, "origin");
-			gl.glUniform2f(origin, 0f, -1.5f);
+			blast.sprite.rot = player.sprite.rot;
+			drawGameObject(gl, blast);
 
-			this.vBuf = Buffers.newDirectFloatBuffer(blast.verts);
-			this.tBuf = Buffers.newDirectFloatBuffer(blast.uvs);
-			this.numVerts = blast.verts.length / 3;
-
-			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-			gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
-
-			gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
-			gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
-
-			gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-			//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
-		
 		} else {
 			
-			blast.setScale(45, 25);
+			blast.sprite.setScale(45, 25);
 		}
 	}
 	
@@ -557,52 +434,23 @@ class Renderer implements GLEventListener {
 		
 		String fontSprites = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 		Sprite2D sprite = new Sprite2D(512, 512);
-		sprite.setScale(20);
-		int pxLen = str.length() * (int) sprite.scale[0] * 2;
-		x = -pxLen / 2 + (int) sprite.scale[0];
+		sprite.setScale(22);
+		
+		TextChar tc = new TextChar();
+		
+		int pxLen = str.length() * (int) tc.sprite.scale[0] * 2;
+		x = -pxLen / 2 + (int) tc.sprite.scale[0];
 
 		for (int i = 0; i < str.length(); i++) {
 			
 			int charIndex = fontSprites.indexOf(str.charAt(i));
 			int offset = 128 + 4;	//index offset of where the first char starts in the sprite sheet.
 			int index = charIndex + offset + (charIndex / 12) * 4;
-			sprite.setIndex(index);
-			sprite.setSize(32, 32);
-			sprite.setPosition(x + i * sprite.scale[1] * 2, y);
-			drawChar(gl, sprite);
+			tc.sprite.setIndex(index);
+			tc.sprite.setSize(32, 32);
+			tc.sprite.setPosition(x + i * sprite.scale[1] * 2, y);
+			drawGameObject(gl, tc);
 		}
-	}
-	
-	public void drawChar(GL3 gl, Sprite2D sprite) {
-		
-		//shader uniform variables
-		int rotation = gl.glGetUniformLocation(renderingProgram, "rotate");
-		gl.glUniformMatrix2fv(rotation, 1, true, Buffers.newDirectFloatBuffer(Matrix.rot2D(0)));
-		
-		int scale = gl.glGetUniformLocation(renderingProgram, "scale");
-		gl.glUniform2f(scale, sprite.scale[0], sprite.scale[1]);
-		
-		int pos = gl.glGetUniformLocation(renderingProgram, "pos");
-		gl.glUniform2f(pos, sprite.position[0] - (sprite.scale[0]), sprite.position[1] - (sprite.scale[1]));
-		
-		int res = gl.glGetUniformLocation(renderingProgram, "res");
-		gl.glUniform2f(res, width, height);
-		
-		int origin = gl.glGetUniformLocation(renderingProgram, "origin");
-		gl.glUniform2f(origin, 0, 0);
-		
-		this.vBuf = Buffers.newDirectFloatBuffer(sprite.verts);
-		this.tBuf = Buffers.newDirectFloatBuffer(sprite.uvs);
-		this.numVerts = sprite.verts.length / 3;
-		
-		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[0]);								//make vert buffer active
-		gl.glBufferData(GL3.GL_ARRAY_BUFFER, vBuf.limit() * Buffers.SIZEOF_FLOAT, vBuf, GL3.GL_STATIC_DRAW);	//copy verts to VBO[0] 
-		
-		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vbo[1]);								//make tex buffer active 
-		gl.glBufferData(GL3.GL_ARRAY_BUFFER, tBuf.limit() * Buffers.SIZEOF_FLOAT, tBuf, GL3.GL_STATIC_DRAW);	//copy normals to VBO[1] 
-
-		gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVerts);
-		//gl.glDrawArrays(GL3.GL_POINTS, 0, numVerts);
 	}
 	
 	public void loadTexture(String fileName) {
@@ -619,5 +467,29 @@ class Renderer implements GLEventListener {
 				e.printStackTrace(); 
 			}
 		}	
+	}
+}
+
+class Parts extends GameObject {
+	
+	public Parts(int index) {
+		
+		sprite = new Sprite2D(512, 512);
+		sprite.setIndex(index);
+		sprite.setScale(45, 25);
+		sprite.setSize(64, 64);
+		visable = false;
+	}
+}
+
+class TextChar extends GameObject {
+	
+	String fontLayout;
+	
+	public TextChar() {
+		
+		this.fontLayout = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+		this.sprite = new Sprite2D(512, 512);
+		this.sprite.setScale(22);
 	}
 }

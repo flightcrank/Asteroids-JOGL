@@ -83,7 +83,6 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 
 		if (rend.scene == Scene.GAME_OVER) {
 			
-			System.out.println("test");
 			//rend.scene = Scene.TITLE;
 		}
 		
@@ -117,7 +116,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 						if (bullet.visable == false && player.visable == true) {
 
 							bullet.visable = true;
-							bullet.rot = player.rot;
+							bullet.sprite.rot = player.sprite.rot;
 							bullet.sprite.position[0] = player.sprite.position[0];
 							bullet.sprite.position[1] = player.sprite.position[1];
 							bullet.vX = player.dX * 8;

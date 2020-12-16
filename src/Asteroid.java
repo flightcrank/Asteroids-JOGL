@@ -56,12 +56,12 @@ public class Asteroid extends GameObject {
 		rotSpeed = (float) ((Math.random() - .5) * 2) * .03f;
 	}
 	
-	@Override
+	//@Override
 	public void update(int w, int h) {
 		
 		sprite.position[0] += vX;
 		sprite.position[1] += vY;
-		rot += rotSpeed;
+		sprite.rot += rotSpeed;
 		checkBounds(w, h);
 	}
 	

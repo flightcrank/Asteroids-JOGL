@@ -2,7 +2,6 @@
 
 out vec4 FragColor;
 
-uniform vec2 panelResolution;
 uniform float time;
 uniform int flag;
 uniform sampler2D ourTexture;

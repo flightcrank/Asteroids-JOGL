@@ -30,7 +30,7 @@ public class Ship extends GameObject {
 		for (int i = 0; i < bullets.length; i++) {
 			
 			bullets[i] = new Bullet();	
-		}		
+		}
 	}
 	
 	public void reset() {
@@ -39,7 +39,7 @@ public class Ship extends GameObject {
 		dY = 0.0f;
 		sprite.position[0] = 0.0f;
 		sprite.position[1] = 0.0f;
-		rot = 0.0f;
+		sprite.rot = 0.0f;
 		vX = 0.0f;
 		vY = 0.0f;
 		rotSpeed = 0.0f;
@@ -49,8 +49,8 @@ public class Ship extends GameObject {
 	public void setDirection() {
 		
 		//calculate ships normalised direction vector for the x and y axis
-		dX = (float) Math.sin(rot);
-		dY = (float) Math.cos(rot);
+		dX = (float) Math.sin(sprite.rot);
+		dY = (float) Math.cos(sprite.rot);
 	}
 	
 	public void checkBounds(int w, int h) {
@@ -64,10 +64,10 @@ public class Ship extends GameObject {
 		sprite.position[1] = (sprite.position[1] < -halfHeight) ? sprite.position[1] =   halfHeight : sprite.position[1];
 	}
 	
-	@Override //update player position and rotation
+	//@Override //update player position and rotation
 	public void update(int w, int h) {
 		
-		rot += rotSpeed;
+		sprite.rot += rotSpeed;
 		sprite.position[0] += vX;
 		sprite.position[1] += vY;
 		//sprite.setPosition(posX, posY);

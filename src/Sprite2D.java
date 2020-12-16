@@ -10,7 +10,9 @@ class Sprite2D {
 	float[] verts;		//the verts that make up the quad
 	float[] uvs;		//the uv co-ords for each vert
 	float[] position;	//the position the sprite will be drawn on screen
+	float[] origin;		//the point of origin for operation like rotation etc
 	int[] dimentions;	//the size in px of the sprite sheet
+	float rot;		//the rotation in radians of the sprite	
 	int index;		//the index of the sprite to be drawn from the sprite sheet
 
 	public Sprite2D(int x, int y) {
@@ -21,8 +23,13 @@ class Sprite2D {
 		float p[] = {0f, 0f};
 		position = p;
 		
+		float o[] = {0f, 0f};
+		origin = o;
+		
 		int d[] = {x, y};
 		dimentions = d;
+		
+		rot = 0;
 		
 		index = 0;
 		
@@ -116,6 +123,17 @@ class Sprite2D {
 		
 		this.position[0] = x;
 		this.position[1] = y;
+	}
+	
+	/**
+	 *
+	 * @param x origin of sprites x axis
+	 * @param y origin of sprites y axis
+	 */
+	public void setOrigin(float x, float y) {
+		
+		this.origin[0] = x;
+		this.origin[1] = y;
 	}
 		
 	private void setVerts() {

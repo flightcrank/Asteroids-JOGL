@@ -18,7 +18,7 @@ public class Bullet extends GameObject {
 		sprite.setSize(64, 64);
 	}
 		
-	@Override
+	//@Override
 	public void update(int w, int h) {
 	
 		sprite.position[0] += -vX;
