@@ -153,16 +153,16 @@ class Renderer implements GLEventListener {
 				
 				drawAsteroids(gl);
 				drawParts(gl);
-				drawString("GAME OVER", 0, 0, gl);
+				drawString("GAME OVER", 0, 0, 30, gl);
 				break;
 				
 			case PLAY_AGAIN:
 				
 				drawAsteroids(gl);
 				drawParts(gl);
-				drawString("GAME OVER", 0, 0, gl);
-				drawString("PRESS ANY KEY", 0, 100, gl);
-				drawString("TO PLAY AGAIN", 0, 120, gl);
+				drawString("GAME OVER", 0, 0, 30, gl);
+				drawString("PRESS ANY KEY", 0, 100, 22, gl);
+				drawString("TO PLAY AGAIN", 0, 120, 22, gl);
 				break;
 		}
 	}
@@ -284,7 +284,7 @@ class Renderer implements GLEventListener {
 		
 		String str = String.format("%06d", score);
 		int yPos = (height / 2) - 15;	
-		drawString(str, 0, -yPos, gl);	
+		drawString(str, 0, -yPos, 22, gl);	
 	}
 	
 	public void drawBullets(GL3 gl) {
@@ -419,7 +419,8 @@ class Renderer implements GLEventListener {
 			
 		} else {
 			
-			drawString("PRESS SPACE TO START", 0, 150, gl);
+			drawString("PRESS SPACE TO START", 0, 150, 22, gl);
+			drawString("2020: JOSHUA LAMBERT", 0, 200, 15, gl);
 		}
 		
 		drawGameObject(gl, title);
@@ -465,9 +466,10 @@ class Renderer implements GLEventListener {
 		}
 	}
 	
-	public void drawString(String str, int x, int y, GL3 gl) {
+	public void drawString(String str, int x, int y, int size, GL3 gl) {
 
 		TextChar tc = new TextChar();
+		tc.sprite.setScale(size);
 		
 		int pxLen = str.length() * (int) tc.sprite.scale[0] * 2;
 		x = -pxLen / 2 + (int) tc.sprite.scale[0];
@@ -479,7 +481,7 @@ class Renderer implements GLEventListener {
 			int index = charIndex + offset + (charIndex / 12) * 4;
 			tc.sprite.setIndex(index);
 			tc.sprite.setSize(32, 32);
-			tc.sprite.setPosition(x + i * tc.sprite.scale[1] * 2, y);
+			tc.sprite.setPosition(x + i * tc.sprite.scale[0] * 2, y);
 			drawGameObject(gl, tc);
 		}
 	}
