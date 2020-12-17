@@ -23,13 +23,12 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 	public AsteroidsJOGL() {
 		
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		player = new Ship();
-		asteroids = new ArrayList<>();
-		asteroids.add(new Asteroid(Size.BIG));
-		asteroids.add(new Asteroid(Size.BIG));
-		asteroids.add(new Asteroid(Size.BIG));
-
-		rend = new Renderer(player, asteroids, Scene.TITLE);
+		this.player = new Ship();
+		this.asteroids = new ArrayList<>();
+		this.asteroids.add(new Asteroid(Size.BIG));
+		this.asteroids.add(new Asteroid(Size.BIG));
+		this.asteroids.add(new Asteroid(Size.BIG));
+		this.rend = new Renderer(player, asteroids, Scene.TITLE);
 		
 		initComponents();
 	}
@@ -52,7 +51,9 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 
                 setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
                 setTitle("Asteroids JOGL");
+                setMinimumSize(new java.awt.Dimension(512, 512));
 
+                gLJPanel1.setMinimumSize(new java.awt.Dimension(512, 512));
                 gLJPanel1.setPreferredSize(new java.awt.Dimension(512, 512));
                 gLJPanel1.addKeyListener(new java.awt.event.KeyAdapter() {
                         public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -67,11 +68,11 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 gLJPanel1.setLayout(gLJPanel1Layout);
                 gLJPanel1Layout.setHorizontalGroup(
                         gLJPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 428, Short.MAX_VALUE)
+                        .addGap(0, 512, Short.MAX_VALUE)
                 );
                 gLJPanel1Layout.setVerticalGroup(
                         gLJPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 407, Short.MAX_VALUE)
+                        .addGap(0, 512, Short.MAX_VALUE)
                 );
 
                 getContentPane().add(gLJPanel1, java.awt.BorderLayout.CENTER);
@@ -152,31 +153,33 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 			}	
 		}
 		
+		if (rend.scene == Scene.TITLE) {
+						
+			if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
+				
+				rend.scene = Scene.GAME;
+				player.visable = true;
+			}
+		}
+		
 		if (rend.scene == Scene.PLAY_AGAIN) {
 			
-			rend.scene = Scene.TITLE;
 			player.reset();
 			player.lives = 3;
 			asteroids.clear();
 			asteroids.add(new Asteroid(Size.BIG));
 			asteroids.add(new Asteroid(Size.BIG));
 			asteroids.add(new Asteroid(Size.BIG));
+			rend.scene = Scene.TITLE;
 		}
 		
 		if (rend.scene == Scene.GAME_OVER) {
 			
-			rend.scene = Scene.PLAY_AGAIN;
-		}
-		
-		if (rend.scene == Scene.TITLE) {
+			if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
 			
-			int v = evt.getKeyCode();
-			
-			if (v == KeyEvent.VK_SPACE) {
-				
-				rend.scene = Scene.GAME;
+				rend.scene = Scene.PLAY_AGAIN;
 			}
-		}
+		}	
         }//GEN-LAST:event_gLJPanel1KeyReleased
 
 	/**

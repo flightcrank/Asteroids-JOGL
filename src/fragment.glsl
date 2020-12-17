@@ -12,7 +12,7 @@ void main() {
 	
 	vec4 texCol = texture(ourTexture, uv);
 
-	float outline = smoothstep(0.25, 0.5, texCol.r);
+	float outline = smoothstep(0.20, 0.5, texCol.r);
 	vec4 col = vec4(outline);
 
 	//vec4 final = mix(col, col2);

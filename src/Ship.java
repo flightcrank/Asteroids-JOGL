@@ -27,6 +27,7 @@ public class Ship extends GameObject {
 		sprite.setIndex(0);
 		sprite.setScale(1);
 		sprite.setSize(64, 64);
+		visable = false;
 		//sprite.setPosition(200, 100);
 
 		//set up the bullet propertys
@@ -55,6 +56,7 @@ public class Ship extends GameObject {
 		vX = 0.0f;
 		vY = 0.0f;
 		rotSpeed = 0.0f;
+		thrust = false;
 		sprite.rot = 0.0f;
 		sprite.setScale(1);
 		sprite.setPosition(0, 0);

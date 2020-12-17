@@ -139,7 +139,7 @@ class Renderer implements GLEventListener {
 				break;
 				
 			case GAME:
-				
+				 
 				drawShip(gl);
 				drawBlast(gl);
 				drawBullets(gl);
@@ -161,7 +161,8 @@ class Renderer implements GLEventListener {
 				drawAsteroids(gl);
 				drawParts(gl);
 				drawString("GAME OVER", 0, 0, gl);
-				drawString("ANY KEY TO PLAY AGAIN", 0, 100, gl);
+				drawString("PRESS ANY KEY", 0, 100, gl);
+				drawString("TO PLAY AGAIN", 0, 120, gl);
 				break;
 		}
 	}
@@ -306,7 +307,7 @@ class Renderer implements GLEventListener {
 			
 			a.update(width, height);
 			drawGameObject(gl, a);
-
+			
 			boolean p = a.checkCollision(player);
 
 			if (p == true) {
@@ -399,6 +400,11 @@ class Renderer implements GLEventListener {
 	
 	public void drawTitle(GL3 gl) {
 		
+		for (int j = 0; j < player.parts.length; j++) {
+						
+			player.parts[j].visable = false;
+		}
+				
 		if (Math.abs(title.sprite.position[1]) > 101) {
 			
 			float ease = 0.06f;
