@@ -55,8 +55,15 @@ public class Ship extends GameObject {
 		vX = 0.0f;
 		vY = 0.0f;
 		rotSpeed = 0.0f;
+		sprite.rot = 0.0f;
 		sprite.setScale(1);
 		sprite.setPosition(0, 0);
+		
+		for (int i = 0; i < parts.length; i++) {
+			
+			parts[i].vX = (float) Math.random() - 0.5f;
+			parts[i].vY = (float) Math.random() - 0.5f;
+		}
 	}
 
 	public void setDirection() {

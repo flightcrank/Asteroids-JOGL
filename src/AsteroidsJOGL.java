@@ -4,6 +4,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.FPSAnimator;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 
 /**
@@ -21,14 +22,13 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 
 	public AsteroidsJOGL() {
 		
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		player = new Ship();
 		asteroids = new ArrayList<>();
+		asteroids.add(new Asteroid(Size.BIG));
+		asteroids.add(new Asteroid(Size.BIG));
+		asteroids.add(new Asteroid(Size.BIG));
 
-		for(int i = 0; i < 3; i++) {
-		
-			asteroids.add(new Asteroid(Size.BIG));
-		}
-		
 		rend = new Renderer(player, asteroids, Scene.TITLE);
 		
 		initComponents();
@@ -81,36 +81,27 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 
         private void gLJPanel1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyPressed
                 
-		if (rend.scene == Scene.GAME_OVER) {
-			
-			//rend.scene = Scene.TITLE;
-		}
-		
-		switch (evt.getKeyCode()) {
+		if (rend.scene == Scene.GAME) {
 
-			case KeyEvent.VK_A:
+			switch (evt.getKeyCode()) {
 
-				player.rotSpeed = 0.05f;
-				break;
+				case KeyEvent.VK_A:
 
-			case KeyEvent.VK_D:
+					player.rotSpeed = 0.05f;
+					break;
 
-				player.rotSpeed = -0.05f;
-				break;
+				case KeyEvent.VK_D:
 
-			case KeyEvent.VK_W:
+					player.rotSpeed = -0.05f;
+					break;
 
-				player.thrust = true;
-				break;
+				case KeyEvent.VK_W:
 
-			case KeyEvent.VK_SPACE:
-				
-				if (rend.scene == Scene.TITLE) {
-					
-					rend.scene = Scene.GAME;
-					
-				} else if (rend.scene == Scene.GAME) {
-					
+					player.thrust = true;
+					break;
+
+				case KeyEvent.VK_SPACE:
+
 					for (Bullet bullet : player.bullets) {
 
 						if (bullet.visable == false && player.visable == true) {
@@ -124,32 +115,68 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 							break;
 						}
 					}
-				}
-				
-				break;
-		}
-		
+
+					break;
+
+				default:
+					break;
+			}
+		}	
         }//GEN-LAST:event_gLJPanel1KeyPressed
 
         private void gLJPanel1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyReleased
 	
-		switch (evt.getKeyCode()) {
-			
-			case KeyEvent.VK_A:
-
-				player.rotSpeed = 0.0f;
-				break;
-			
-			case KeyEvent.VK_D:
-
-				player.rotSpeed = 0.0f;
-				break;
-			
-			case KeyEvent.VK_W:
+		if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
 				
-				player.thrust = false;
-				break;
-		}                
+			this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+		}
+		
+		if (rend.scene == Scene.GAME) {
+			
+			switch (evt.getKeyCode()) {
+
+				case KeyEvent.VK_A:
+
+					player.rotSpeed = 0.0f;
+					break;
+
+				case KeyEvent.VK_D:
+
+					player.rotSpeed = 0.0f;
+					break;
+
+				case KeyEvent.VK_W:
+
+					player.thrust = false;
+					break;
+			}	
+		}
+		
+		if (rend.scene == Scene.PLAY_AGAIN) {
+			
+			rend.scene = Scene.TITLE;
+			player.reset();
+			player.lives = 3;
+			asteroids.clear();
+			asteroids.add(new Asteroid(Size.BIG));
+			asteroids.add(new Asteroid(Size.BIG));
+			asteroids.add(new Asteroid(Size.BIG));
+		}
+		
+		if (rend.scene == Scene.GAME_OVER) {
+			
+			rend.scene = Scene.PLAY_AGAIN;
+		}
+		
+		if (rend.scene == Scene.TITLE) {
+			
+			int v = evt.getKeyCode();
+			
+			if (v == KeyEvent.VK_SPACE) {
+				
+				rend.scene = Scene.GAME;
+			}
+		}
         }//GEN-LAST:event_gLJPanel1KeyReleased
 
 	/**
@@ -186,8 +213,6 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 				new AsteroidsJOGL().setVisible(true);
 			}
 		});
-		
-		
 	}
 
         // Variables declaration - do not modify//GEN-BEGIN:variables

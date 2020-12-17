@@ -155,6 +155,14 @@ class Renderer implements GLEventListener {
 				drawParts(gl);
 				drawString("GAME OVER", 0, 0, gl);
 				break;
+				
+			case PLAY_AGAIN:
+				
+				drawAsteroids(gl);
+				drawParts(gl);
+				drawString("GAME OVER", 0, 0, gl);
+				drawString("ANY KEY TO PLAY AGAIN", 0, 100, gl);
+				break;
 		}
 	}
 	
@@ -262,7 +270,7 @@ class Renderer implements GLEventListener {
 				long currentTime = System.currentTimeMillis();
 				long diff = currentTime - player.parts[i].spawnTime;
 				
-				if (diff >= 1500 && player.lives > 0 ) {
+				if (diff >= 2000 && player.lives > 0 ) {
 				
 					player.parts[i].visable = false;
 					player.visable = true;
@@ -486,6 +494,3 @@ class Renderer implements GLEventListener {
 		}	
 	}
 }
-
-
-
