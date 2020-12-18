@@ -6,28 +6,32 @@
 
 public class Ship extends GameObject {
 	
+	int lives;		//amount of lives left
+	long spawn;		//System time when the ship spawned
 	float dX;		//normalised direction the ship is pointing on the x axis
 	float dY;		//normalised direction the ship is pointing on the y axis
 	float rotSpeed;		//the increment in which the ships rotates
-	boolean thrust;		//if thrust is being apllied
-	int lives;		//amount of lives left
+	boolean thrust;		//if thrust is being apllied or not
+	boolean sheild;		//if the player has a sheild or not
 	Bullet[] bullets;	//bullets the ship is able to shoot
-	Parts[] parts;
+	Parts[] parts;		//array of sprites represents the parts the ship is made form
 
 	public Ship() {
 		
+		lives = 3;
 		dX = 0.0f;
 		dY = 0.0f;
 		rotSpeed = 0.0f;
 		thrust = false;
-		lives = 3;
+		sheild = true;
+		visable = false;
 		bullets = new Bullet[3];
 		parts = new Parts[4];
 		sprite = new Sprite2D(512, 512);
 		sprite.setIndex(0);
 		sprite.setScale(1);
 		sprite.setSize(64, 64);
-		visable = false;
+		spawn = System.currentTimeMillis();
 		//sprite.setPosition(200, 100);
 
 		//set up the bullet propertys
@@ -51,12 +55,14 @@ public class Ship extends GameObject {
 	
 	public void reset() {
 		
+		spawn = System.currentTimeMillis();
 		dX = 0.0f;
 		dY = 0.0f;
 		vX = 0.0f;
 		vY = 0.0f;
 		rotSpeed = 0.0f;
 		thrust = false;
+		sheild = true;
 		sprite.rot = 0.0f;
 		sprite.setScale(1);
 		sprite.setPosition(0, 0);
@@ -92,6 +98,15 @@ public class Ship extends GameObject {
 		sprite.rot += rotSpeed;
 		sprite.position[0] += vX;
 		sprite.position[1] += vY;
+		
+		long duration = System.currentTimeMillis() - spawn;
+		
+		System.out.println(spawn + " - " + duration);
+		
+		if (duration > 5000) {
+			
+			this.sheild = false;
+		}
 		
 		//check if the ship as reached the bounds of the screen
 		checkBounds(w, h);

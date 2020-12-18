@@ -129,6 +129,9 @@ class Renderer implements GLEventListener {
 		int res = gl.glGetUniformLocation(renderingProgram, "res");
 		gl.glUniform2f(res, width, height);
 		
+		int sheild = gl.glGetUniformLocation(renderingProgram, "sheild");
+		gl.glUniform1i(sheild, 0);
+		
 		//DRAW
 		switch(scene) {
 			
@@ -139,14 +142,14 @@ class Renderer implements GLEventListener {
 				break;
 				
 			case GAME:
-				 
-				drawShip(gl);
-				drawBlast(gl);
+			
 				drawBullets(gl);
 				drawAsteroids(gl);
 				drawLives(gl);
 				drawScore(gl);
 				drawParts(gl);
+				drawBlast(gl);
+				drawShip(gl);
 				break;
 				
 			case GAME_OVER:
@@ -308,8 +311,14 @@ class Renderer implements GLEventListener {
 			a.update(width, height);
 			drawGameObject(gl, a);
 			
-			boolean p = a.checkCollision(player);
-
+			boolean p = false;
+				
+			//if not sheild check collision
+			if (!player.sheild) {
+				
+				p = a.checkCollision(player);
+			} 
+			
 			if (p == true) {
 
 				for(int j = 0; j < player.parts.length; j++) {
@@ -388,10 +397,17 @@ class Renderer implements GLEventListener {
 				player.sprite.scale[1] += vY;
 			}
 			
-			player.update(width, height);
-			blast.sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
-			drawGameObject(gl, player);
 			
+			
+			int f = (player.sheild == true) ? 1 : 0;
+			int sheild = gl.glGetUniformLocation(renderingProgram, "sheild");
+			gl.glUniform1i(sheild, f);
+			
+			drawGameObject(gl, player);
+			player.update(width, height);
+			blast.sprite.rot = player.sprite.rot;
+			blast.sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
+						
 		} else {
 			
 			player.visable = false;
@@ -400,9 +416,25 @@ class Renderer implements GLEventListener {
 	
 	public void drawTitle(GL3 gl) {
 		
-		for (int j = 0; j < player.parts.length; j++) {
+		GameObject[] icon = new GameObject[3];
+		int scale = 40;
+		float x = -(scale * icon.length) / 3;
+		
+		for (int i = 0; i < icon.length; i++) {
+			
+			icon[i] = new GameObject();
+			icon[i].sprite = new Sprite2D(512, 512);
+			icon[i].sprite.setIndex(8 + i);
+			icon[i].sprite.setScale(scale);
+			icon[i].sprite.setSize(64, 64);
+			icon[i].sprite.setPosition(x + i * scale , 225);
+		}
+		
+		score = 0;
+		
+		for (int i = 0; i < player.parts.length; i++) {
 						
-			player.parts[j].visable = false;
+			player.parts[i].visable = false;
 		}
 				
 		if (Math.abs(title.sprite.position[1]) > 101) {
@@ -420,10 +452,15 @@ class Renderer implements GLEventListener {
 		} else {
 			
 			drawString("PRESS SPACE TO START", 0, 150, 22, gl);
-			drawString("2020: JOSHUA LAMBERT", 0, 200, 15, gl);
+			drawString("- 2020 : JOSHUA LAMBERT -", 0, 190, 15, gl);
 		}
 		
 		drawGameObject(gl, title);
+		
+		for (int i = 0; i < icon.length; i++) {
+		
+			drawGameObject(gl, icon[i]);
+		}
 	}
 	
 	public void drawLives(GL3 gl) {
@@ -457,7 +494,6 @@ class Renderer implements GLEventListener {
 				blast.sprite.scale[1] += vY;
 			}			
 			
-			blast.sprite.rot = player.sprite.rot;
 			drawGameObject(gl, blast);
 
 		} else {

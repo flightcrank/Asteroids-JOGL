@@ -157,6 +157,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 						
 			if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
 				
+				player.reset();
 				rend.scene = Scene.GAME;
 				player.visable = true;
 			}
