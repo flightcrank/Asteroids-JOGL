@@ -485,7 +485,8 @@ class Renderer implements GLEventListener {
 		} else {
 			
 			drawString("PRESS SPACE TO START", 0, 150, 22, gl);
-			drawString("- 2020 : JOSHUA LAMBERT -", 0, 190, 15, gl);
+			drawString("-2020 : JOSHUA LAMBERT : V1.0-", 0, 190, 14, gl);
+			//drawString("----------------------", 0, 190, 20, gl);
 		}
 		
 		drawGameObject(gl, title);
@@ -550,7 +551,7 @@ class Renderer implements GLEventListener {
 			int index = charIndex + offset + (charIndex / 12) * 4;
 			tc.sprite.setIndex(index);
 			tc.sprite.setSize(32, 32);
-			tc.sprite.setPosition(x + i * tc.sprite.scale[0] * 2, y);
+			tc.sprite.setPosition(x + i * size, y);
 			drawGameObject(gl, tc);
 		}
 	}
