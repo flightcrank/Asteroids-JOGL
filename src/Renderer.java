@@ -9,7 +9,7 @@ import java.util.*;
 import kuusisto.tinysound.Music;
 import kuusisto.tinysound.Sound;
 
-class Renderer implements GLEventListener {
+public class Renderer implements GLEventListener {
 
 	int renderingProgram;
 	int vao[] = new int[1]; //vertex attribute object
@@ -158,6 +158,8 @@ class Renderer implements GLEventListener {
 				drawParts(gl);
 				drawBlast(gl);
 				drawShip(gl);
+				checkPlayerCollision();
+				checkBulletCollision();
 				break;
 				
 			case GAME_OVER:
@@ -328,51 +330,12 @@ class Renderer implements GLEventListener {
 		}
 	}
 	
-	public void drawAsteroids(GL3 gl) {
-		
-		//if all asteroids are distroid
-		if (asteroids.isEmpty()) {
-			
-			scene = Scene.WINNER;
-		}
+	public void checkBulletCollision() {
 		
 		for (int i = 0; i < asteroids.size(); i++) {
-			
+		
 			Asteroid a = asteroids.get(i);
 			
-			a.update(width, height);
-			drawGameObject(gl, a);
-			
-			boolean p = false;
-				
-			//if not sheild check collision
-			if (!player.sheild) {
-				
-				p = a.checkCollision(player);
-			} 
-			
-			if (p == true) {
-
-				for(int j = 0; j < player.parts.length; j++) {
-					
-					player.parts[j].sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
-					player.parts[j].sprite.rot = player.sprite.rot;
-					player.parts[j].visable = true;
-					player.parts[j].spawnTime = System.currentTimeMillis();
-				}
-				
-				player.visable = false;
-				player.lives--;
-				player.reset();
-				shipDeath.play(0.5);
-				
-				if (player.lives == 0) {
-					
-					player.visable = false;
-					scene = Scene.GAME_OVER;
-				}
-			}
-
 			for (int j = 0; j < player.bullets.length; j++) {
 
 				Bullet bullet = player.bullets[j];
@@ -409,7 +372,62 @@ class Renderer implements GLEventListener {
 							break;
 					}	
 				}
-			}	
+			}
+		}
+	}
+	
+	public void checkPlayerCollision() {
+		
+		for (Asteroid a : asteroids) {	
+		
+			boolean p = false;
+
+			//if not sheild check collision
+			if (!player.sheild) {
+
+				p = a.checkCollision(player);
+			}
+
+			if (p == true) {
+
+				for(int j = 0; j < player.parts.length; j++) {
+
+					player.parts[j].sprite.setPosition(player.sprite.position[0], player.sprite.position[1]);
+					player.parts[j].sprite.rot = player.sprite.rot;
+					player.parts[j].visable = true;
+					player.parts[j].spawnTime = System.currentTimeMillis();
+				}
+
+				player.visable = false;
+				player.lives--;
+				player.reset();
+				shipDeath.play(0.5);
+
+				if (player.lives == 0) {
+
+					player.visable = false;
+					scene = Scene.GAME_OVER;
+				}
+			}
+		}
+	}
+	
+	public void drawAsteroids(GL3 gl) {
+		
+		//if all asteroids are distroid
+		if (asteroids.isEmpty()) {
+			
+			scene = Scene.WINNER;
+		}
+		
+		for (int i = 0; i < asteroids.size(); i++) {
+			
+			Asteroid a = asteroids.get(i);
+			
+			a.update(width, height);
+			drawGameObject(gl, a);
+			
+				
 		}
 	}
 	
@@ -484,9 +502,8 @@ class Renderer implements GLEventListener {
 			
 		} else {
 			
-			drawString("PRESS SPACE TO START", 0, 150, 22, gl);
+			drawString("PRESS SPACE TO START", 0, 50, 22, gl);
 			drawString("-2020 : JOSHUA LAMBERT : V1.0-", 0, 190, 14, gl);
-			//drawString("----------------------", 0, 190, 20, gl);
 		}
 		
 		drawGameObject(gl, title);
@@ -536,12 +553,13 @@ class Renderer implements GLEventListener {
 		}
 	}
 	
+	//will not center the text correctly if size is a odd number
 	public void drawString(String str, int x, int y, int size, GL3 gl) {
 
 		TextChar tc = new TextChar();
 		tc.sprite.setScale(size);
 		
-		int pxLen = str.length() * (int) tc.sprite.scale[0] * 2;
+		int pxLen = str.length() * size;
 		x = -pxLen / 2 + (int) tc.sprite.scale[0];
 
 		for (int i = 0; i < str.length(); i++) {

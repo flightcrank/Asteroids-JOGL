@@ -66,8 +66,8 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 setTitle("Asteroids JOGL");
                 setMinimumSize(new java.awt.Dimension(512, 512));
                 addWindowListener(new java.awt.event.WindowAdapter() {
-                        public void windowClosed(java.awt.event.WindowEvent evt) {
-                                formWindowClosed(evt);
+                        public void windowClosing(java.awt.event.WindowEvent evt) {
+                                test(evt);
                         }
                 });
 
@@ -149,8 +149,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
         private void gLJPanel1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyReleased
 	
 		if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			
-			TinySound.shutdown();
+
 			this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 		}
 		
@@ -214,11 +213,11 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 		}
         }//GEN-LAST:event_gLJPanel1KeyReleased
 
-        private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-               
-		System.out.println("Window Closed");
+        private void test(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_test
+
+		System.out.println("Shuting down tiny sound");
 		TinySound.shutdown();
-        }//GEN-LAST:event_formWindowClosed
+        }//GEN-LAST:event_test
 
 	/**
 	 * @param args the command line arguments
