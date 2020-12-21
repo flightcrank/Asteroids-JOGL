@@ -32,7 +32,7 @@ public class Renderer implements GLEventListener {
 	Sound shipDeath;
 	Sound astroidHitSFX;
 	
-	public Renderer(Ship player, ArrayList asteroids, Scene scene, Music clip, Sound shipDeath, Sound asteroidHitSFX) {
+	Renderer(Ship player, ArrayList asteroids, Scene scene, Music clip, Sound shipDeath, Sound asteroidHitSFX) {
 		
 		this.player = player;
 		this.asteroids = asteroids;
@@ -425,9 +425,7 @@ public class Renderer implements GLEventListener {
 			Asteroid a = asteroids.get(i);
 			
 			a.update(width, height);
-			drawGameObject(gl, a);
-			
-				
+			drawGameObject(gl, a);	
 		}
 	}
 	
