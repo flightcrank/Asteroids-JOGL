@@ -3,12 +3,13 @@
 This is a simple OpenGL program coded in Java using JOGL to recreate the classic
 Asteroids game using the OpenGL Graphics API. 
 
-Its currently still under active development, but is working and ready to use if you wish.
-Feel free to contact me with any issues or feature requests.
+Its working and ready to use if you wish. Its pretty much at version 1.0 so development
+active development has stopped. However updates I may still continue to support it so
+feel free to contact me with any issues or feature requests.
 
 In order to compiles the JOGL libs must be available on the java classpath. The jogl libs
 can be found at https://jogamp.org/deployment/v2.3.2/archive/jogamp-all-platforms.7z
-It also uses the tinysound lib to play the soundeffects. The licence for which is inside the tinysound jar file.
+It also uses the tinysound lib to play the soundeffects. The license for which is inside the tinysound jar file.
 
 Compilation instructions on a linux system are as follows... (browse to the src directory)
 
