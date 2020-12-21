@@ -16,7 +16,7 @@ void main() {
 	float base = smoothstep(0.3, 0.5, texCol.r);
 	float outline = smoothstep(0.0, 0.3, texCol.r);
 	vec4 col1 = vec4(base);
-	vec4 col2 = vec4(0.0, 0.8, 0.8, outline);
+	vec4 col2 = vec4(0.0, 0.75, 1.0, outline);
 
 	vec4 final;
 

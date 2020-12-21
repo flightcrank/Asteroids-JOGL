@@ -6,6 +6,8 @@ import com.jogamp.opengl.util.texture.TextureIO;
 import java.io.*;
 import java.nio.FloatBuffer;
 import java.util.*;
+import kuusisto.tinysound.Music;
+import kuusisto.tinysound.Sound;
 
 class Renderer implements GLEventListener {
 
@@ -26,13 +28,19 @@ class Renderer implements GLEventListener {
 	ArrayList<Asteroid> asteroids;
 	Ship player;
 	Scene scene;
+	Music rocketSFX;
+	Sound shipDeath;
+	Sound astroidHitSFX;
 	
-	public Renderer(Ship player, ArrayList asteroids, Scene scene) {
+	public Renderer(Ship player, ArrayList asteroids, Scene scene, Music clip, Sound shipDeath, Sound asteroidHitSFX) {
 		
 		this.player = player;
 		this.asteroids = asteroids;
 		this.scene = scene;
 		this.score = 0;
+		this.rocketSFX = clip;
+		this.shipDeath = shipDeath;
+		this.astroidHitSFX = asteroidHitSFX;
 		
 		this.title = new GameObject();
 		title.sprite = new Sprite2D(512, 512);
@@ -142,11 +150,11 @@ class Renderer implements GLEventListener {
 				break;
 				
 			case GAME:
-			
-				drawBullets(gl);
-				drawAsteroids(gl);
+				
 				drawLives(gl);
 				drawScore(gl);
+				drawBullets(gl);
+				drawAsteroids(gl);
 				drawParts(gl);
 				drawBlast(gl);
 				drawShip(gl);
@@ -159,13 +167,31 @@ class Renderer implements GLEventListener {
 				drawString("GAME OVER", 0, 0, 30, gl);
 				break;
 				
-			case PLAY_AGAIN:
+			case PLAY_AGAIN_GO:
 				
 				drawAsteroids(gl);
 				drawParts(gl);
 				drawString("GAME OVER", 0, 0, 30, gl);
 				drawString("PRESS ANY KEY", 0, 100, 22, gl);
 				drawString("TO PLAY AGAIN", 0, 120, 22, gl);
+				break;
+			
+			case PLAY_AGAIN_W:
+				
+				drawBlast(gl);
+				drawShip(gl);
+				drawBullets(gl);
+				drawString("YOU WON!", 0, 0, 30, gl);
+				drawString("PRESS ANY KEY", 0, 100, 22, gl);
+				drawString("TO PLAY AGAIN", 0, 120, 22, gl);
+				break;
+			
+			case WINNER:
+				
+				drawBlast(gl);
+				drawShip(gl);
+				drawBullets(gl);
+				drawString("YOU WON!", 0, 0, 30, gl);
 				break;
 		}
 	}
@@ -303,7 +329,13 @@ class Renderer implements GLEventListener {
 	}
 	
 	public void drawAsteroids(GL3 gl) {
-				
+		
+		//if all asteroids are distroid
+		if (asteroids.isEmpty()) {
+			
+			scene = Scene.WINNER;
+		}
+		
 		for (int i = 0; i < asteroids.size(); i++) {
 			
 			Asteroid a = asteroids.get(i);
@@ -332,6 +364,7 @@ class Renderer implements GLEventListener {
 				player.visable = false;
 				player.lives--;
 				player.reset();
+				shipDeath.play(0.5);
 				
 				if (player.lives == 0) {
 					
@@ -350,6 +383,7 @@ class Renderer implements GLEventListener {
 
 					asteroids.remove(i);
 					bullet.visable = false;
+					astroidHitSFX.play(0.5);
 
 					switch(a.size) {
 
@@ -386,7 +420,7 @@ class Renderer implements GLEventListener {
 			//scale ship tween
 			if (player.sprite.scale[0] < 22) {
 			
-				float ease = 0.2f;
+				float ease = 0.1f;
 				float targetX = 22.5f;
 				float targetY = 22.5f;
 				float dX = targetX - player.sprite.scale[0];
@@ -396,9 +430,7 @@ class Renderer implements GLEventListener {
 				player.sprite.scale[0] += vX;
 				player.sprite.scale[1] += vY;
 			}
-			
-			
-			
+					
 			int f = (player.sheild == true) ? 1 : 0;
 			int sheild = gl.glGetUniformLocation(renderingProgram, "sheild");
 			gl.glUniform1i(sheild, f);
@@ -411,6 +443,7 @@ class Renderer implements GLEventListener {
 		} else {
 			
 			player.visable = false;
+			rocketSFX.stop();
 		}
 	}
 	

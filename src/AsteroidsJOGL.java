@@ -6,29 +6,42 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.FPSAnimator;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import kuusisto.tinysound.Sound;
+import kuusisto.tinysound.Music;
+import kuusisto.tinysound.TinySound;
 
 /**
  *
  * @author karma
  */
 
-enum Scene {TITLE, GAME, GAME_OVER, PLAY_AGAIN};
+enum Scene {TITLE, GAME, GAME_OVER, PLAY_AGAIN_GO, PLAY_AGAIN_W, WINNER};
 
 public class AsteroidsJOGL extends javax.swing.JFrame {
 	
 	public Ship player;
 	public ArrayList<Asteroid> asteroids;
 	public Renderer rend;
+	public Sound lazerSFX;
+	public Sound shipDeathSFX;
+	public Sound astteroidHitSFX;
+	public Music rocketSFX;
 
 	public AsteroidsJOGL() {
 		
+		TinySound.init();
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.player = new Ship();
 		this.asteroids = new ArrayList<>();
 		this.asteroids.add(new Asteroid(Size.BIG));
 		this.asteroids.add(new Asteroid(Size.BIG));
 		this.asteroids.add(new Asteroid(Size.BIG));
-		this.rend = new Renderer(player, asteroids, Scene.TITLE);
+		this.lazerSFX = TinySound.loadSound("lazer2.wav");
+		this.shipDeathSFX = TinySound.loadSound("shipdeath.wav");
+		this.rocketSFX = TinySound.loadMusic("rocket2.wav");
+		this.astteroidHitSFX = TinySound.loadSound("asteroidhit.wav");
+		this.rend = new Renderer(player, asteroids, Scene.TITLE, rocketSFX, shipDeathSFX, astteroidHitSFX);
+		rocketSFX.setVolume(0.2);
 		
 		initComponents();
 	}
@@ -52,6 +65,11 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
                 setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
                 setTitle("Asteroids JOGL");
                 setMinimumSize(new java.awt.Dimension(512, 512));
+                addWindowListener(new java.awt.event.WindowAdapter() {
+                        public void windowClosed(java.awt.event.WindowEvent evt) {
+                                formWindowClosed(evt);
+                        }
+                });
 
                 gLJPanel1.setMinimumSize(new java.awt.Dimension(512, 512));
                 gLJPanel1.setPreferredSize(new java.awt.Dimension(512, 512));
@@ -82,7 +100,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 
         private void gLJPanel1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyPressed
                 
-		if (rend.scene == Scene.GAME) {
+		if (rend.scene == Scene.GAME || rend.scene == Scene.WINNER || rend.scene == Scene.PLAY_AGAIN_W && player.visable == true) {
 
 			switch (evt.getKeyCode()) {
 
@@ -99,6 +117,8 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 				case KeyEvent.VK_W:
 
 					player.thrust = true;
+					rocketSFX.play(true);
+					
 					break;
 
 				case KeyEvent.VK_SPACE:
@@ -106,7 +126,8 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 					for (Bullet bullet : player.bullets) {
 
 						if (bullet.visable == false && player.visable == true) {
-
+							
+							lazerSFX.play(0.1);
 							bullet.visable = true;
 							bullet.sprite.rot = player.sprite.rot;
 							bullet.sprite.position[0] = player.sprite.position[0];
@@ -128,11 +149,12 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
         private void gLJPanel1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gLJPanel1KeyReleased
 	
 		if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
-				
+			
+			TinySound.shutdown();
 			this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 		}
 		
-		if (rend.scene == Scene.GAME) {
+		if (rend.scene == Scene.GAME || rend.scene == Scene.WINNER || rend.scene == Scene.PLAY_AGAIN_W && player.visable == true) {
 			
 			switch (evt.getKeyCode()) {
 
@@ -149,6 +171,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 				case KeyEvent.VK_W:
 
 					player.thrust = false;
+					rocketSFX.stop();
 					break;
 			}	
 		}
@@ -163,7 +186,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 			}
 		}
 		
-		if (rend.scene == Scene.PLAY_AGAIN) {
+		if (rend.scene == Scene.PLAY_AGAIN_GO || rend.scene == Scene.PLAY_AGAIN_W) {
 			
 			player.reset();
 			player.lives = 3;
@@ -178,10 +201,24 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 			
 			if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
 			
-				rend.scene = Scene.PLAY_AGAIN;
+				rend.scene = Scene.PLAY_AGAIN_GO;
 			}
-		}	
+		}
+		
+		if (rend.scene == Scene.WINNER) {
+			
+			if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
+			
+				rend.scene = Scene.PLAY_AGAIN_W;
+			}
+		}
         }//GEN-LAST:event_gLJPanel1KeyReleased
+
+        private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+               
+		System.out.println("Window Closed");
+		TinySound.shutdown();
+        }//GEN-LAST:event_formWindowClosed
 
 	/**
 	 * @param args the command line arguments

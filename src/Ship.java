@@ -72,6 +72,12 @@ public class Ship extends GameObject {
 			parts[i].vX = (float) Math.random() - 0.5f;
 			parts[i].vY = (float) Math.random() - 0.5f;
 		}
+		
+		for (int i = 0; i < bullets.length; i++) {
+			
+			bullets[i].visable = false;
+			bullets[i].sprite.setPosition(0, 0);
+		}
 	}
 
 	public void setDirection() {
@@ -101,13 +107,8 @@ public class Ship extends GameObject {
 		
 		long duration = System.currentTimeMillis() - spawn;
 		
-		System.out.println(spawn + " - " + duration);
-		
-		if (duration > 5000) {
-			
-			this.sheild = false;
-		}
-		
+		this.sheild = (duration < 5000) ? true : false;
+				
 		//check if the ship as reached the bounds of the screen
 		checkBounds(w, h);
 		
