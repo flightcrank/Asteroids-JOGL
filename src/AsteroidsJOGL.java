@@ -129,6 +129,7 @@ public class AsteroidsJOGL extends javax.swing.JFrame {
 							
 							lazerSFX.play(0.1);
 							bullet.visable = true;
+							bullet.spawnTime = System.currentTimeMillis();
 							bullet.sprite.rot = player.sprite.rot;
 							bullet.sprite.position[0] = player.sprite.position[0];
 							bullet.sprite.position[1] = player.sprite.position[1];

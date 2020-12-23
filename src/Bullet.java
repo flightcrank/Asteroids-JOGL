@@ -7,8 +7,11 @@
 
 public class Bullet extends GameObject {
 		
+	long spawnTime;
+	
 	public Bullet() {
 		
+		spawnTime = 0;
 		vX = 0.1f;
 		vY = 0.1f;
 		visable = false;
@@ -17,8 +20,7 @@ public class Bullet extends GameObject {
 		sprite.setScale(45.0f);
 		sprite.setSize(64, 64);
 	}
-		
-	//@Override
+			
 	public void update(int w, int h) {
 	
 		sprite.position[0] += -vX;
@@ -32,9 +34,16 @@ public class Bullet extends GameObject {
 		int halfWidth = w / 2;
 		int halfHeight = h / 2;
 		
-		this.visable = (sprite.position[0] >  halfWidth) ? false : this.visable;
-		this.visable = (sprite.position[0] < -halfWidth) ? false : this.visable;
-		this.visable = (sprite.position[1] >  halfHeight) ? false : this.visable;
-		this.visable = (sprite.position[1] < -halfHeight) ? false : this.visable;
+		long duration = System.currentTimeMillis() - spawnTime;
+		
+		if (duration > 700) {
+			
+			this.visable = false;
+		}
+	
+		sprite.position[0]= (sprite.position[0] >  halfWidth)  ? sprite.position[0] =   -halfWidth  : sprite.position[0];
+		sprite.position[0] = (sprite.position[0] < -halfWidth)  ? sprite.position[0] =   halfWidth  : sprite.position[0];
+		sprite.position[1] = (sprite.position[1] >  halfHeight) ? sprite.position[1] =  -halfHeight : sprite.position[1];
+		sprite.position[1] = (sprite.position[1] < -halfHeight) ? sprite.position[1] =   halfHeight : sprite.position[1];
 	}
 }
